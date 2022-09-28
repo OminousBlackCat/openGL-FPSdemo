@@ -17,12 +17,14 @@ add_subdirectory(lib/glew EXCLUDE_FROM_ALL)
 add_subdirectory(lib/glfw EXCLUDE_FROM_ALL)
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
 add_subdirectory(lib/glad EXCLUDE_FROM_ALL)
+add_subdirectory(lib/assimp EXCLUDE_FROM_ALL)
 
 target_link_libraries(openGL-FPSdemo
     PRIVATE glfw
     PRIVATE libglew_static
     PRIVATE glm
     PRIVATE glad
+    PRIVATE assimp
 )
 
 # define shader dir
