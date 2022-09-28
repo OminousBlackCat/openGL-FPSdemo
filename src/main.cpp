@@ -1,3 +1,7 @@
+#ifdef _WIN32
+    #define APIENTRY __stdcall
+#endif
+
 #include<iostream>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
@@ -11,6 +15,7 @@
 #include"texture.h"
 #include <random>
 #include <time.h>
+#include"asset.hpp"
 
 // force to using amd graphics card
 extern "C"
@@ -114,9 +119,9 @@ int main() {
 
 
 	
-	// Ê¹ÓÃelementsÄ£Ê½ÏÂµÄ¶¥µãÊý×é
-	// cube Ö»ÐèÒª°Ë¸ö¶¥µã
-	// µ«ÊÇÐèÒªÖ¸¶¨indexÀ´È·¶¨»æÖÆË³Ðò
+	// Ê¹ï¿½ï¿½elementsÄ£Ê½ï¿½ÂµÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// cube Ö»ï¿½ï¿½Òªï¿½Ë¸ï¿½ï¿½ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒªÖ¸ï¿½ï¿½indexï¿½ï¿½È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½
 	float vertices[] = {
 		 0.0f,  0.0f,  0.0f,	//0
 		 1.0f,  0.0f,  0.0f,  	//1
@@ -129,9 +134,9 @@ int main() {
 	};
 
 
-	// Ê¹ÓÃarraysÄ£Ê½ÏÂµÄ¶¥µãÊý×é
-	//Ò»¸öÃæÓÉÁ½¸öÈý½ÇÐÎ×é³É Ò»¸öÃæ¾ÍÐèÒªÁù¸ö¶¥µã Òò´ËÒ»¹²ÐèÒª36¸ö¶¥µã
-	// Ã¿Ò»ÐÐ´ú±íÁËÒ»¸ö¶¥µãµÄÎ»ÖÃÒÔ¼°ÆäËù´ú±íÌùÍ¼µÄÎ»ÖÃ
+	// Ê¹ï¿½ï¿½arraysÄ£Ê½ï¿½ÂµÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Òª36ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// Ã¿Ò»ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Î»ï¿½ï¿½
 	float vertices_array_mode[] = {
 		// ---position--		--texture--  --normal--
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,    0.0f,  0.0f, -1.0f,
@@ -178,9 +183,9 @@ int main() {
 	};
 
 
-	// È·¶¨ÔÚelementÄ£Ê½ÏÂµÄ»æÖÆË³Ðò
-	// Ò»¸öÃæÐèÒªÁ½¸öÈý½ÇÐÎ Òò´ËÒ»¹²»æÖÆ12¸öÈý½ÇÐÎ
-	// ÐèÒª12*3 = 36¸öÔªËØ
+	// È·ï¿½ï¿½ï¿½ï¿½elementÄ£Ê½ï¿½ÂµÄ»ï¿½ï¿½ï¿½Ë³ï¿½ï¿½
+	// Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½12ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// ï¿½ï¿½Òª12*3 = 36ï¿½ï¿½Ôªï¿½ï¿½
 	unsigned int elementIndex[] = {	
 		0,1,2,
 		1,2,3,
@@ -199,28 +204,28 @@ int main() {
 
 	
 
-	//¶¨ÒåÌùÍ¼
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼
 	const int textureCount = 4;
 
-	Texture riceTexture("rice.png", GL_RGBA);
-	Texture hutaoTexture("hutao.png", GL_RGBA);
-	Texture jjzTexture("jjz.jpg", GL_RGB);
-	Texture chenTexture("chen.jpg", GL_RGB);
+	Texture riceTexture(IMAGE_DIR"/rice.png", GL_RGBA);
+	Texture hutaoTexture(IMAGE_DIR"/hutao.png", GL_RGBA);
+	Texture jjzTexture(IMAGE_DIR"/jjz.jpg", GL_RGB);
+	Texture chenTexture(IMAGE_DIR"/chen.jpg", GL_RGB);
 
 	Texture textureList[textureCount] = { riceTexture, hutaoTexture, jjzTexture, chenTexture };
 
-	//¶¨Òå¾µÃæ·´ÉäÌùÍ¼
-	Texture riceSpec("rice_spec.png", GL_RGBA);
-	Texture hutaoSpec("hutao_spec.png", GL_RGBA);
-	Texture jjzSpec("jjz_spec.jpg", GL_RGB);
-	Texture chenSpec("chen_spec.jpg", GL_RGB);
+	//ï¿½ï¿½ï¿½å¾µï¿½æ·´ï¿½ï¿½ï¿½ï¿½Í¼
+	Texture riceSpec("/rice_spec.png", GL_RGBA);
+	Texture hutaoSpec("/hutao_spec.png", GL_RGBA);
+	Texture jjzSpec("/jjz_spec.jpg", GL_RGB);
+	Texture chenSpec("/chen_spec.jpg", GL_RGB);
 
 	Texture specList[textureCount] = { riceSpec, hutaoSpec, jjzSpec, chenSpec };
 
 
 
-	// ¶¨ÒåµÚÒ»¸öÁ¢·½ÌåµÄVAO
-	// Õâ¸öÁ¢·½ÊÇ¹âÔ´
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½VAO
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¹ï¿½Ô´
 	unsigned int baseVAO;
 	glGenVertexArrays(1, &baseVAO);
 	glBindVertexArray(baseVAO);
@@ -240,16 +245,16 @@ int main() {
 	glEnableVertexAttribArray(0); //enable location = 0
 	glBindVertexArray(0);
 
-	// ¶¨ÒåÆÕÍ¨ÎïÌå
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½
 	unsigned int cube_rice;
 	unsigned int rice_vertex;
-	glm::vec3 origin_position(0.0f, 0.0f, 0.0f); //Ô­µãÎ»ÖÃ
+	glm::vec3 origin_position(0.0f, 0.0f, 0.0f); //Ô­ï¿½ï¿½Î»ï¿½ï¿½
 	glGenBuffers(1, &rice_vertex);
 	glGenVertexArrays(1, &cube_rice);
 	glBindVertexArray(cube_rice); 
 	glBindBuffer(GL_ARRAY_BUFFER, rice_vertex);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_array_mode), vertices_array_mode, GL_STATIC_DRAW);
-	// ÎÞÐè°ó¶¨indexÊý×éÓë»º´æ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½indexï¿½ï¿½ï¿½ï¿½ï¿½ë»ºï¿½ï¿½
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
@@ -258,8 +263,8 @@ int main() {
 	glEnableVertexAttribArray(2); //enable location = 2
 
 
-	Shader shader1("vertexShader.vs", "fragmentShader.fs");
-	Shader shader2("lightVertexShader.vs", "lightShader.fs");
+	Shader shader1(SHADER_DIR"/vertexShader.vs", SHADER_DIR"/fragmentShader.fs");
+	Shader shader2(SHADER_DIR"/lightVertexShader.vs", SHADER_DIR"/lightShader.fs");
 	glBindVertexArray(0);
 
 	float gree_axis_value = 1.0f;
@@ -309,18 +314,18 @@ int main() {
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(myCamera.zoomAngle, (float)windowWidth / (float)windowHeight, 1.0f, 100.0f);
 
-		//Ê¹ÓÃÎïÌåµÄ×ÅÉ«Æ÷
+		//Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½
 		shader1.use();
 		unsigned int modelMat = glGetUniformLocation(shader1.ID, "modelMat");
 		unsigned int viewMat = glGetUniformLocation(shader1.ID, "viewMat");
 		unsigned int projectionMat = glGetUniformLocation(shader1.ID, "projectionMat");
 		unsigned int viewPos = glGetUniformLocation(shader1.ID, "viewPos");
 
-		//ÉèÖÃÎïÌåµÄ²ÄÖÊ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
 		unsigned int materialShininess = glGetUniformLocation(shader1.ID, "material.shininess");
 		glUniform1f(materialShininess, 32.0f);
 
-		//ÉèÖÃ¹âÔ´ÊôÐÔ
+		//ï¿½ï¿½ï¿½Ã¹ï¿½Ô´ï¿½ï¿½ï¿½ï¿½
 		unsigned int lightAmbient = glGetUniformLocation(shader1.ID, "flashLight.ambient");
 		unsigned int lightDiffuse = glGetUniformLocation(shader1.ID, "flashLight.diffuse");
 		unsigned int lightSpecular = glGetUniformLocation(shader1.ID, "flashLight.specular");
@@ -358,13 +363,13 @@ int main() {
 				glUniformMatrix4fv(modelMat, 1, GL_FALSE, glm::value_ptr(model));
 				glBindTexture(GL_TEXTURE_2D, textureList[(i * j) * 5 % 4].textureID);
 				glUniform1i(glGetUniformLocation(shader1.ID, "material.objectTexture"), 0);
-				glActiveTexture(GL_TEXTURE1);//Æô¶¯Ò»¸öÐÂµÄÌùÍ¼×÷Îª¾µÏñ·´ÉäËùÐèµÄÌùÍ¼
+				glActiveTexture(GL_TEXTURE1);//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½Í¼ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼
 				glBindTexture(GL_TEXTURE_2D, specList[(i * j) * 5 % 4].textureID);
 				glUniform1i(glGetUniformLocation(shader1.ID, "material.specTexture"), 1);
 				glDrawArrays(GL_TRIANGLES, 0, 256);
 				
 				current_postition.z += 2.0f;
-				model = glm::mat4(1.0f); //Î»ÖÃ¸´Ô­
+				model = glm::mat4(1.0f); //Î»ï¿½Ã¸ï¿½Ô­
 			}
 			current_postition.x += 2.0f;
 		}
@@ -373,9 +378,9 @@ int main() {
 
 		glBindVertexArray(0);
 
-		//Ê¹ÓÃ¹âÔ´×ÅÉ«Æ÷
+		//Ê¹ï¿½Ã¹ï¿½Ô´ï¿½ï¿½É«ï¿½ï¿½
 		shader2.use();
-		model = glm::mat4(1.0f); //Î»ÖÃ¸´Ô­
+		model = glm::mat4(1.0f); //Î»ï¿½Ã¸ï¿½Ô­
 
 		modelMat = glGetUniformLocation(shader2.ID, "modelMat");
 		viewMat = glGetUniformLocation(shader2.ID, "viewMat");
