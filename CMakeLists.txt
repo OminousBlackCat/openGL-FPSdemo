@@ -16,17 +16,22 @@ add_definitions(-DGLEW_STATIC)
 add_subdirectory(lib/glew EXCLUDE_FROM_ALL)
 add_subdirectory(lib/glfw EXCLUDE_FROM_ALL)
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
+add_subdirectory(lib/glad EXCLUDE_FROM_ALL)
 
 target_link_libraries(openGL-FPSdemo
     PRIVATE glfw
     PRIVATE libglew_static
     PRIVATE glm
+    PRIVATE glad
 )
 
+# define shader dir
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/asset.hpp.in
   ${CMAKE_CURRENT_BINARY_DIR}/src/asset.hpp
 )
+
+# define cmake source dir and binary dir
 target_include_directories(openGL-FPSdemo
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src
