@@ -16,6 +16,7 @@
 #include <random>
 #include <time.h>
 #include"asset.hpp"
+#include "sky_box.h"
 
 // force to using amd graphics card
 extern "C"
@@ -211,10 +212,10 @@ int main() {
 	Texture textureList[textureCount] = { riceTexture, hutaoTexture, jjzTexture, chenTexture };
 
 	// 初始化镜面反射纹理图片
-	Texture riceSpec("/rice_spec.png", GL_RGBA);
-	Texture hutaoSpec("/hutao_spec.png", GL_RGBA);
-	Texture jjzSpec("/jjz_spec.jpg", GL_RGB);
-	Texture chenSpec("/chen_spec.jpg", GL_RGB);
+	Texture riceSpec(IMAGE_DIR"/rice_spec.png", GL_RGBA);
+	Texture hutaoSpec(IMAGE_DIR"/hutao_spec.png", GL_RGBA);
+	Texture jjzSpec(IMAGE_DIR"/jjz_spec.jpg", GL_RGB);
+	Texture chenSpec(IMAGE_DIR"/chen_spec.jpg", GL_RGB);
 
 	Texture specList[textureCount] = { riceSpec, hutaoSpec, jjzSpec, chenSpec };
 
