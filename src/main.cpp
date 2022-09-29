@@ -2,6 +2,8 @@
     #define APIENTRY __stdcall
 #endif
 
+#define STB_IMAGE_IMPLEMENTATION
+
 #include<iostream>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
@@ -13,10 +15,10 @@
 #include<math.h>
 #include"camera.h"
 #include"texture.h"
-#include <random>
+#include "sky_box.h"
 #include <time.h>
 #include"asset.hpp"
-#include "sky_box.h"
+
 
 // force to using amd graphics card
 extern "C"

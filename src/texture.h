@@ -1,8 +1,5 @@
 #pragma once
 
-#define STB_IMAGE_IMPLEMENTATION
-
-#include "stb_image.h"
 #include <string>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>

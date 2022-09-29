@@ -1,8 +1,5 @@
 #pragma once
 
-#define STB_IMAGE_IMPLEMENTATION
-
-#include "stb_image.h"
 #include <string>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
@@ -26,7 +23,7 @@ public:
         int image_width, image_height, image_channel;
         unsigned char* image;
         for(int i = 0; i < file_urls.size(); i++){
-            image = stbi_load(file_urls[i], &image_width, &image_height, &image_channel, 0);
+            image = stbi_load(file_urls[i].c_str(), &image_width, &image_height, &image_channel, 0);
             if(image_channel == 3){
                 glTexImage2D(
                         GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
