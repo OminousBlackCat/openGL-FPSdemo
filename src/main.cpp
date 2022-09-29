@@ -219,6 +219,10 @@ int main() {
 	Texture specList[textureCount] = { riceSpec, hutaoSpec, jjzSpec, chenSpec };
 
 
+	// 初始化天空盒所需的纹理图片
+	int sky_tex_width, sky_tex_height;
+	unsigned char* sky_tex_img;
+
 
 	// 创建VAO baseVAO中用来存放光照cube
 	unsigned int baseVAO;

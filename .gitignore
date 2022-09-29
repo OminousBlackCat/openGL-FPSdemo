@@ -1,8 +1,12 @@
+# clino
+/.idea/
+
 # vscode config
 /.vscode/
 
 # cmake build
 /build/
+/cmake-build-debug/
 
 # Prerequisites
 *.d
