@@ -1,4 +1,5 @@
 namespace asset {
 #define SHADER_DIR "@CMAKE_SOURCE_DIR@/shader"
 #define IMAGE_DIR "@CMAKE_SOURCE_DIR@/image"
+#define MODEL_DIR "@CMAKE_SOURCE_DIR@/model"
 }
