@@ -6,7 +6,9 @@
 #include<fstream>
 #include<sstream>
 #include<iostream>
+#include<glm/glm.hpp>
 #include<glad/glad.h>
+#include<glm/gtc/type_ptr.hpp>
 
 using namespace std;
 
@@ -89,12 +91,37 @@ public:
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
 
-		// then we can using the ID to use this program	
+		// then we can use the ID to use this program
 	};
 	// using this shader
-	void use(){
+	void use() const{
 		glUseProgram(this->ID);
 	};
+
+    void uniform_mat4(glm::mat4 input, const char* valueName) const{
+        glUniformMatrix4fv(glGetUniformLocation(this->ID, valueName), 1, GL_FALSE, glm::value_ptr(input));
+    };
+
+    void uniform_vec3(glm::vec3 input, const char* valueName) const{
+        glUniform3f(glGetUniformLocation(this->ID, valueName), input.x, input.y, input.z);
+    }
+
+    void uniform_vec3(float input1, float input2, float input3, const char* valueName) const{
+        glUniform3f(glGetUniformLocation(this->ID, valueName), input1, input2, input3);
+    }
+
+    void uniform_vec4(glm::vec4 input, const char* valueName) const{
+        glUniform4f(glGetUniformLocation(this->ID, valueName), input.x, input.y, input.z, input.w);
+    }
+
+    void uniform_vec4(float inputX, float inputY, float inputZ, float inputW, const char* valueName) const{
+        glUniform4f(glGetUniformLocation(this->ID, valueName), inputX, inputY, inputZ, inputW);
+    }
+
+    void uniform_float(float input, const char* valueName) const{
+        glUniform1f(glGetUniformLocation(this->ID, valueName), input);
+    }
+
 };
 
 #endif

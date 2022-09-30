@@ -223,8 +223,15 @@ int main() {
 
 
 	// 初始化天空盒所需的纹理图片
-	int sky_tex_width, sky_tex_height;
-	unsigned char* sky_tex_img;
+    // 注册天空盒
+    vector<string> tex_urls;
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox/posx.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox/negx.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox/posy.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox/negy.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox/posz.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox/negz.jpg");
+    SkyBox mySkyBox(tex_urls);
 
 
 	// 创建VAO baseVAO中用来存放光照cube
@@ -253,27 +260,31 @@ int main() {
 	glm::vec3 origin_position(0.0f, 0.0f, 0.0f); // 初始位置(世界坐标系中的位置)
 	glGenBuffers(1, &rice_vertex);
 	glGenVertexArrays(1, &cube_rice);
-	glBindVertexArray(cube_rice); 
+	glBindVertexArray(cube_rice);
 	glBindBuffer(GL_ARRAY_BUFFER, rice_vertex);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_array_mode), vertices_array_mode, GL_STATIC_DRAW);
 	// 启用并绑定对应的顶点属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(0); //enable location = 0
 	glEnableVertexAttribArray(1); //enable location = 1
 	glEnableVertexAttribArray(2); //enable location = 2
-
+    glBindVertexArray(0);
 
 	Shader shader1(SHADER_DIR"/vertexShader.vs", SHADER_DIR"/fragmentShader.fs");
 	Shader shader2(SHADER_DIR"/lightVertexShader.vs", SHADER_DIR"/lightShader.fs");
-	glBindVertexArray(0);
+    Shader shader_skyBox(SHADER_DIR"/skyVertexShader.vs", SHADER_DIR"/skyFragShader.fs");
+
+
+
+
 
 	float gree_axis_value = 1.0f;
 
 
 	while (!glfwWindowShouldClose(mainWindow)) {
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glfwPollEvents();
@@ -314,60 +325,47 @@ int main() {
 		view = myCamera.getLookAtMat();
 
 		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(myCamera.zoomAngle, (float)windowWidth / (float)windowHeight, 1.0f, 100.0f);
+		projection = glm::perspective(myCamera.zoomAngle, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+
+        // 首先绘制天空盒
+        glm::mat4 skyView = glm::mat4(glm::mat3(view));
+        mySkyBox.draw(shader_skyBox, projection, skyView);
 
 		// 使用shader1(带光照的 物体所使用的着色器)
 		shader1.use();
-		unsigned int modelMat = glGetUniformLocation(shader1.ID, "modelMat");
-		unsigned int viewMat = glGetUniformLocation(shader1.ID, "viewMat");
-		unsigned int projectionMat = glGetUniformLocation(shader1.ID, "projectionMat");
-		unsigned int viewPos = glGetUniformLocation(shader1.ID, "viewPos");
 
 		// 注册cube的反射锐利程度
-		unsigned int materialShininess = glGetUniformLocation(shader1.ID, "material.shininess");
-		glUniform1f(materialShininess, 32.0f);
+        shader1.uniform_float(32.0f, "material.shininess");
 
 		// 注册环境光 漫反射光与镜面反射光的属性
-		unsigned int lightAmbient = glGetUniformLocation(shader1.ID, "flashLight.ambient");
-		unsigned int lightDiffuse = glGetUniformLocation(shader1.ID, "flashLight.diffuse");
-		unsigned int lightSpecular = glGetUniformLocation(shader1.ID, "flashLight.specular");
-		unsigned int lightPosition = glGetUniformLocation(shader1.ID, "flashLight.position");
-		unsigned int lightDirection = glGetUniformLocation(shader1.ID, "flashLight.direction");
-		unsigned int flashCutOff = glGetUniformLocation(shader1.ID, "flashLight.cutOff");
-		unsigned int flashOutCutOff = glGetUniformLocation(shader1.ID, "flashLight.outerCutOff");
-		unsigned int constant = glGetUniformLocation(shader1.ID, "flashLight.attenuation_constant");
-		unsigned int liner = glGetUniformLocation(shader1.ID, "flashLight.attenuation_linear");
-		unsigned int quadratic = glGetUniformLocation(shader1.ID, "flashLight.attenuation_quadratic");
-		glUniform3f(lightAmbient, 0.01f, 0.01f, 0.01f);
-		glUniform3f(lightDiffuse, 0.7f, 0.7f, 0.7f);
-		glUniform3f(lightSpecular, 1.0f, 1.0f, 1.0f);
-		glUniform3f(lightPosition, myCamera.position.x, myCamera.position.y, myCamera.position.z);
-		glUniform3f(lightDirection, myCamera.frontVec.x, myCamera.frontVec.y, myCamera.frontVec.z);
-		glUniform1f(flashCutOff, 0.98f);
-		glUniform1f(flashOutCutOff, 0.94f);
-		glUniform1f(constant, 1.0f);
-		glUniform1f(liner, 0.14f);
-		glUniform1f(quadratic, 0.07f);
+        shader1.uniform_vec3(0.5f, 0.5f, 0.5f, "flashLight.ambient");
+        shader1.uniform_vec3(0.7f, 0.7f, 0.7f, "flashLight.diffuse");
+        shader1.uniform_vec3(1.0f, 1.0f, 1.0f, "flashLight.specular");
+        shader1.uniform_vec3(myCamera.position, "flashLight.position");
+        shader1.uniform_vec3(myCamera.frontVec, "flashLight.direction");
+        shader1.uniform_float(0.98f, "flashLight.cutOff");
+        shader1.uniform_float(0.94f, "flashLight.outerCutOff");
+        shader1.uniform_float(1.0f, "flashLight.attenuation_constant");
+        shader1.uniform_float(0.14f, "flashLight.attenuation_linear");
+        shader1.uniform_float(0.07f, "flashLight.attenuation_quadratic");
 
-		glUniform3f(viewPos, myCamera.position.x, myCamera.position.y, myCamera.position.z);
-		glUniformMatrix4fv(viewMat, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projectionMat, 1, GL_FALSE, glm::value_ptr(projection));
+        shader1.uniform_vec3(myCamera.position, "viewPos");
+        shader1.uniform_mat4(view, "viewMat");
+        shader1.uniform_mat4(projection, "projectionMat");
 		glBindVertexArray(cube_rice);
-		
-		 
 
 		glm::vec3 current_postition(origin_position.x, origin_position.y, origin_position.z);
 		for (int i = 0; i < 10; i++) {
 			current_postition.z = 0.0f;
 			for (int j = 0; j < 10; j++) {
 				model = glm::translate(model, current_postition);
-				glActiveTexture(GL_TEXTURE0);
-				glUniformMatrix4fv(modelMat, 1, GL_FALSE, glm::value_ptr(model));
+				glActiveTexture(GL_TEXTURE1);
+				shader1.uniform_mat4(model, "modelMat");
 				glBindTexture(GL_TEXTURE_2D, textureList[(i * j) * 5 % 4].textureID);
-				glUniform1i(glGetUniformLocation(shader1.ID, "material.objectTexture"), 0);
-				glActiveTexture(GL_TEXTURE1); // 启用纹理1 作为镜面反射纹理
+				glUniform1i(glGetUniformLocation(shader1.ID, "material.objectTexture"), 1);
+				glActiveTexture(GL_TEXTURE2); // 启用纹理1 作为镜面反射纹理
 				glBindTexture(GL_TEXTURE_2D, specList[(i * j) * 5 % 4].textureID);
-				glUniform1i(glGetUniformLocation(shader1.ID, "material.specTexture"), 1);
+				glUniform1i(glGetUniformLocation(shader1.ID, "material.specTexture"), 2);
 				glDrawArrays(GL_TRIANGLES, 0, 256);
 				
 				current_postition.z += 2.0f;
@@ -384,14 +382,11 @@ int main() {
 		shader2.use();
 		model = glm::mat4(1.0f); // 重置模型矩阵
 
-		modelMat = glGetUniformLocation(shader2.ID, "modelMat");
-		viewMat = glGetUniformLocation(shader2.ID, "viewMat");
-		projectionMat = glGetUniformLocation(shader2.ID, "projectionMat");
 
 		model = glm::translate(model, light_postion);
-		glUniformMatrix4fv(modelMat, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(viewMat, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projectionMat, 1, GL_FALSE, glm::value_ptr(projection));
+        shader2.uniform_mat4(model, "modelMat");
+        shader2.uniform_mat4(view, "modelMat");
+        shader2.uniform_mat4(projection, "projectionMat");
 		glBindVertexArray(baseVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);

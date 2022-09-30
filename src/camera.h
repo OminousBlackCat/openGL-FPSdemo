@@ -98,8 +98,9 @@ public:
 
 	void zoom(float offset) {
 		this->zoomAngle -= offset * scrollSensitivity;
-		if (this->zoomAngle < 1.0f)
-			this->zoomAngle = 1.0f;
+		if (this->zoomAngle < 44.0f){
+			this->zoomAngle = 44.0f;
+		}
 		if (this->zoomAngle > 45.0f)
 			this->zoomAngle = 45.0f;
 	}
