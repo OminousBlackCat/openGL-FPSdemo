@@ -17,14 +17,14 @@ class Floor{
 private:
     unsigned int floorVAO{};
     unsigned int textureID{};
-    glm::mat4 modelMat;
+    glm::mat4 modelMat{};
     const float floor_vertex[30] = {
-              -1.0f, 0.0f,  1.f, 0.f, 0.f,
-               1.f, 0.f,  1.f, 0.f, 100.f,
-              -1.f, 0.f, -1.f, 100.f, 0.f,
-               1.f,0.f, 1.f,0.f, 100.f,
-             -1.f,0.f,-1.f, 100.f, 0.f,
-              1.f,0.f,-1.f, 100.f, 100.f
+              -2.0f, 0.f,  2.f, 0.f, 0.f,
+               2.f, 0.f,  2.f, 0.f, 100.f,
+              -2.f, 0.f, -2.f, 100.f, 0.f,
+               2.f,0.f, 2.f,0.f, 100.f,
+             -2.f,0.f,-2.f, 100.f, 0.f,
+              2.f,0.f,-2.f, 100.f, 100.f
     };
 
 public:
@@ -62,14 +62,12 @@ public:
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
         glBindVertexArray(0);
 
-        this->modelMat = glm::mat4(1.f);
+        this->modelMat = glm::mat4(1.0f);
+        modelMat = glm::scale(modelMat, glm::vec3(5.f, 5.f, 5.f));
     }
 
     void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
         shader.use();
-
-        // 将地板resize
-        modelMat = glm::translate(modelMat, glm::vec3(0.f, -1.f, 0.f));
 
         // 输入uniform变量
         shader.uniform_mat4(projectionMat, "projectionMat");
