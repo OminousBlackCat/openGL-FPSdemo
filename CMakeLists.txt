@@ -6,7 +6,7 @@ project(openGL-FPSdemo VERSION 0.1)
 # add the executable
 add_executable(openGL-FPSdemo 
     src/main.cpp
-)
+        src/object.h)
 
 # set cpp standard with 11 version
 set_property(TARGET openGL-FPSdemo PROPERTY CXX_STANDARD 11)

@@ -18,6 +18,7 @@
 #include "sky_box.h"
 #include <time.h>
 #include"asset.hpp"
+#include"object.h"
 
 
 // force to using amd graphics card
@@ -233,6 +234,10 @@ int main() {
     tex_urls.emplace_back(IMAGE_DIR"/skyBox/negz.jpg");
     SkyBox mySkyBox(tex_urls);
 
+    // 注册地板
+    Floor myFloor(TEXTURE_DIR"/floor.jpg");
+
+
 
 	// 创建VAO baseVAO中用来存放光照cube
 	unsigned int baseVAO;
@@ -273,7 +278,7 @@ int main() {
     glBindVertexArray(0);
 
 	Shader shader1(SHADER_DIR"/vertexShader.vs", SHADER_DIR"/fragmentShader.fs");
-	Shader shader2(SHADER_DIR"/lightVertexShader.vs", SHADER_DIR"/lightShader.fs");
+	Shader shader_floor(SHADER_DIR"/floorVertexShader.vs", SHADER_DIR"/floorFragShader.fs");
     Shader shader_skyBox(SHADER_DIR"/skyVertexShader.vs", SHADER_DIR"/skyFragShader.fs");
 
 
@@ -331,6 +336,8 @@ int main() {
         glm::mat4 skyView = glm::mat4(glm::mat3(view));
         mySkyBox.draw(shader_skyBox, projection, skyView);
 
+        myFloor.draw(shader_floor, projection, view);
+
 		// 使用shader1(带光照的 物体所使用的着色器)
 		shader1.use();
 
@@ -378,19 +385,6 @@ int main() {
 
 		glBindVertexArray(0);
 
-		// 启用着色器2 光源着色器
-		shader2.use();
-		model = glm::mat4(1.0f); // 重置模型矩阵
-
-
-		model = glm::translate(model, light_postion);
-        shader2.uniform_mat4(model, "modelMat");
-        shader2.uniform_mat4(view, "modelMat");
-        shader2.uniform_mat4(projection, "projectionMat");
-		glBindVertexArray(baseVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
 
 
 		//calculate the frame render cost
