@@ -45,7 +45,7 @@ float pitch = 0.0f;
 
 float viewFov = 45.0f;
 
-Camera myCamera = Camera(glm::vec3(0.0f, 0.0f, 5.0f));
+Camera myCamera = Camera(glm::vec3(0.0f, 1.0f, 5.0f));
 
 void resize_window(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -262,7 +262,7 @@ int main() {
 	// 创建第二个VAO cube_rice中存放了纹理cube
 	unsigned int cube_rice;
 	unsigned int rice_vertex;
-	glm::vec3 origin_position(0.0f, 0.0f, 0.0f); // 初始位置(世界坐标系中的位置)
+	glm::vec3 origin_position(0.0f, 0.5f, 0.0f); // 初始位置(世界坐标系中的位置)
 	glGenBuffers(1, &rice_vertex);
 	glGenVertexArrays(1, &cube_rice);
 	glBindVertexArray(cube_rice);
@@ -320,6 +320,21 @@ int main() {
 		if (keys[GLFW_KEY_RIGHT]) {
 			light_postion.x += 1.0f * deltaTime;
 		}
+		if (keys[GLFW_KEY_F]){
+			myCamera.ifFpsMode = !myCamera.ifFpsMode;
+		}
+		if (keys[GLFW_KEY_SPACE]){
+			myCamera.isJumping = true;
+		}
+
+		// 修正照相机在FPS模式下的位置 如果y值高于1.0, 就开始自由下落直到1.0
+		if (myCamera.position.y > 1.0f && myCamera.ifFpsMode == true){
+			myCamera.position.y -= cameraSpeed;
+			if (myCamera.position.y < 1.0f)
+				myCamera.position.y = 1.0f;
+		}
+
+		myCamera.jump(deltaTime);
 		
 
 		// define matrix
@@ -366,13 +381,13 @@ int main() {
 			current_postition.z = 0.0f;
 			for (int j = 0; j < 10; j++) {
 				model = glm::translate(model, current_postition);
-				glActiveTexture(GL_TEXTURE1);
+				glActiveTexture(GL_TEXTURE2);
 				shader1.uniform_mat4(model, "modelMat");
 				glBindTexture(GL_TEXTURE_2D, textureList[(i * j) * 5 % 4].textureID);
-				glUniform1i(glGetUniformLocation(shader1.ID, "material.objectTexture"), 1);
-				glActiveTexture(GL_TEXTURE2); // 启用纹理1 作为镜面反射纹理
+				glUniform1i(glGetUniformLocation(shader1.ID, "material.objectTexture"), 2);
+				glActiveTexture(GL_TEXTURE3); // 启用纹理1 作为镜面反射纹理
 				glBindTexture(GL_TEXTURE_2D, specList[(i * j) * 5 % 4].textureID);
-				glUniform1i(glGetUniformLocation(shader1.ID, "material.specTexture"), 2);
+				glUniform1i(glGetUniformLocation(shader1.ID, "material.specTexture"), 3);
 				glDrawArrays(GL_TRIANGLES, 0, 256);
 				
 				current_postition.z += 2.0f;

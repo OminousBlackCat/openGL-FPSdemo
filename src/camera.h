@@ -9,7 +9,7 @@
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const glm::vec3 WORLD_UP = glm::vec3(0.0f, 1.0f, 0.0f);
-const float MOVEMENT_SPEED = 5.0f;
+const float MOVEMENT_SPEED = 3.0f;
 const float CURSOR_SEN = 0.05f;
 const float SCROOL_SEN = 0.1f;
 const float ZOOM_INIT = 45.0f;
@@ -38,6 +38,15 @@ public:
 	const static int CAMERA_LEFT = 2;
 	const static int CAMERA_RIGHT = 3;
 
+	// jump parameter
+	const float jumpAcceleration = 10.0f; // 重力加速度
+	const float jumpInitVelocity = 10.0f;
+	float jumpVelocity;
+	bool isJumping = false;
+
+	// FPS mode or free mode
+	bool ifFpsMode = true;
+
 	//constructor
 	Camera(glm::vec3 init_postion = glm::vec3(0.0f, 0.0f, 3.0f), float yaw = YAW, float pitch = PITCH) {
 		this->position = init_postion;
@@ -49,6 +58,7 @@ public:
 		this->cursorSensitivity = CURSOR_SEN;
 		this->scrollSensitivity = SCROOL_SEN;
 		this->zoomAngle = ZOOM_INIT;
+		this->jumpVelocity = this->jumpInitVelocity;
 	}
 
 	glm::mat4 getLookAtMat() {
@@ -61,25 +71,58 @@ public:
 		}
 		else{
 			float velocity = movementSpeed * deltaTime;
-			switch (direction)
-			{
-			case CAMERA_FORWARD:
-				this->position += frontVec * velocity;
-				break;
-			case CAMERA_BACKWARD:
-				this->position -= velocity * frontVec;
-				break;
-			case CAMERA_LEFT:
-				this->position += glm::normalize(glm::cross(up, frontVec)) * velocity;
-				break;
-			case CAMERA_RIGHT:
-				this->position += glm::normalize(glm::cross(frontVec, up)) * velocity;
-				break;
-			default:
-				break;
-			}
+			if(this -> ifFpsMode){
+				switch (direction)
+				{
+					case CAMERA_FORWARD:
+						this->position += glm::vec3(frontVec.x, 0.0f, frontVec.z) * velocity;
+						break;
+					case CAMERA_BACKWARD:
+						this->position -= velocity * glm::vec3(frontVec.x, 0.0f, frontVec.z);
+						break;
+					case CAMERA_LEFT:
+						this->position += glm::normalize(glm::cross(up, frontVec)) * velocity;
+						break;
+					case CAMERA_RIGHT:
+						this->position += glm::normalize(glm::cross(frontVec, up)) * velocity;
+						break;
+					default:
+						break;
+				}
+			}else{
+				switch (direction)
+				{
+				case CAMERA_FORWARD:
+					this->position += frontVec * velocity;
+					break;
+				case CAMERA_BACKWARD:
+					this->position -= velocity * frontVec;
+					break;
+				case CAMERA_LEFT:
+					this->position += glm::normalize(glm::cross(up, frontVec)) * velocity;
+					break;
+				case CAMERA_RIGHT:
+					this->position += glm::normalize(glm::cross(frontVec, up)) * velocity;
+					break;
+				default:
+					break;
+				}
+			}		
 			updateCameraVector();
 		}
+	}
+
+	void jump(float deltaTime){
+		if(this->ifFpsMode == false || this->isJumping == false)
+			return;
+		if(this->position.y >= 1.0f){
+			position.y += jumpVelocity * deltaTime;
+			jumpVelocity -= this->jumpAcceleration * deltaTime;
+		}else{
+			position.y = 1.0f;
+			this->jumpVelocity = this->jumpInitVelocity;
+			this->isJumping = false;
+		}	
 	}
 
 
