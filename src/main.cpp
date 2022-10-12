@@ -235,7 +235,7 @@ int main() {
     SkyBox mySkyBox(tex_urls);
 
     // 注册地板
-    Floor myFloor(TEXTURE_DIR"/floor.jpg");
+    Floor myFloor(TEXTURE_DIR"/floor.jpg", TEXTURE_DIR"/floor_spec.jpg");
 
 
 
@@ -351,16 +351,19 @@ int main() {
         glm::mat4 skyView = glm::mat4(glm::mat3(view));
         mySkyBox.draw(shader_skyBox, projection, skyView);
 
-        myFloor.draw(shader_floor, projection, view);
+
+
+
+
 
 		// 使用shader1(带光照的 物体所使用的着色器)
 		shader1.use();
 
-		// 注册cube的反射锐利程度
+        // 注册cube的反射锐利程度
         shader1.uniform_float(32.0f, "material.shininess");
 
-		// 注册环境光 漫反射光与镜面反射光的属性
-        shader1.uniform_vec3(0.5f, 0.5f, 0.5f, "flashLight.ambient");
+        // 注册环境光 漫反射光与镜面反射光的属性
+        shader1.uniform_vec3(0.15f, 0.15f, 0.15f, "flashLight.ambient");
         shader1.uniform_vec3(0.7f, 0.7f, 0.7f, "flashLight.diffuse");
         shader1.uniform_vec3(1.0f, 1.0f, 1.0f, "flashLight.specular");
         shader1.uniform_vec3(myCamera.position, "flashLight.position");
@@ -370,6 +373,8 @@ int main() {
         shader1.uniform_float(1.0f, "flashLight.attenuation_constant");
         shader1.uniform_float(0.14f, "flashLight.attenuation_linear");
         shader1.uniform_float(0.07f, "flashLight.attenuation_quadratic");
+
+        myFloor.draw(shader1, projection, view);
 
         shader1.uniform_vec3(myCamera.position, "viewPos");
         shader1.uniform_mat4(view, "viewMat");
