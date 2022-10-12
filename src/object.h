@@ -30,9 +30,10 @@ private:
 public:
     Floor(const std::string& textureURL){
         // bind texture
-        glGenTextures(1, &textureID);
         int width, height, channelCount;
         unsigned char* textureContent = stbi_load(textureURL.c_str(), &width, &height, &channelCount, 0);
+
+        glGenTextures(1, &textureID);
         glBindTexture(GL_TEXTURE_2D, this->textureID);
         // set the texture wrapping parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -43,10 +44,10 @@ public:
         int RGBMode = GL_RGB;
         if(channelCount == 4)
             RGBMode = GL_RGBA;
-        glTexImage2D(GL_TEXTURE_2D, this->textureID, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
-        stbi_image_free(textureContent);
+        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
         glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(0, 0);
+        stbi_image_free(textureContent);  
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         // bind VAO
         glGenVertexArrays(1, &this->floorVAO);
@@ -59,11 +60,11 @@ public:
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)nullptr);
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
         glBindVertexArray(0);
 
         this->modelMat = glm::mat4(1.0f);
-        modelMat = glm::scale(modelMat, glm::vec3(5.f, 5.f, 5.f));
+        modelMat = glm::scale(modelMat, glm::vec3(100.f, 100.f, 100.f));
     }
 
     void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
@@ -74,11 +75,11 @@ public:
         shader.uniform_mat4(viewMat, "viewMat");
         shader.uniform_mat4(this->modelMat, "modelMat");
 
-
-        glBindVertexArray(this->floorVAO);
+        
+        glBindVertexArray(this->floorVAO); 
         glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, this->textureID);
         glUniform1i(glGetUniformLocation(shader.ID, "floorTexture"), 0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, this->textureID);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
