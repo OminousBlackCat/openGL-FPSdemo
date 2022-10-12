@@ -226,12 +226,12 @@ int main() {
 	// 初始化天空盒所需的纹理图片
     // 注册天空盒
     vector<string> tex_urls;
-    tex_urls.emplace_back(IMAGE_DIR"/skyBox/posx.jpg");
-    tex_urls.emplace_back(IMAGE_DIR"/skyBox/negx.jpg");
-    tex_urls.emplace_back(IMAGE_DIR"/skyBox/posy.jpg");
-    tex_urls.emplace_back(IMAGE_DIR"/skyBox/negy.jpg");
-    tex_urls.emplace_back(IMAGE_DIR"/skyBox/posz.jpg");
-    tex_urls.emplace_back(IMAGE_DIR"/skyBox/negz.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox-night/posx.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox-night/negx.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox-night/posy.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox-night/negy.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox-night/posz.jpg");
+    tex_urls.emplace_back(IMAGE_DIR"/skyBox-night/negz.jpg");
     SkyBox mySkyBox(tex_urls);
 
     // 注册地板
