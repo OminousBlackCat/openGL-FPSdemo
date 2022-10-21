@@ -61,7 +61,7 @@ public:
 		this->jumpVelocity = this->jumpInitVelocity;
 	}
 
-	glm::mat4 getLookAtMat() {
+	glm::mat4 getLookAtMat() const {
 		return glm::lookAt(this->position, this->position + this->frontVec, this->up);
 	}
 
@@ -113,7 +113,7 @@ public:
 	}
 
 	void jump(float deltaTime){
-		if(this->ifFpsMode == false || this->isJumping == false)
+		if(!this->ifFpsMode || !this->isJumping)
 			return;
 		if(this->position.y >= 1.0f){
 			position.y += jumpVelocity * deltaTime;

@@ -12,16 +12,16 @@
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
-#include<math.h>
+#include<cmath>
 #include"camera.h"
 #include"texture.h"
 #include "sky_box.h"
-#include <time.h>
+#include <ctime>
 #include"asset.hpp"
 #include"object.h"
 
 
-// force to using amd graphics card
+// force to use amd graphics card
 extern "C"
 {
 	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -31,6 +31,8 @@ using namespace std;
 
 const int windowWidth = 800;
 const int windowHeight = 800;
+
+
 
 bool keys[1024];
 // calculate render time cost
@@ -166,13 +168,16 @@ int main() {
 
 	float gree_axis_value = 1.0f;
 
+    int coldDown = 500;
 
 	while (!glfwWindowShouldClose(mainWindow)) {
 		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glfwPollEvents();
-		
+        if(coldDown > 0)
+            // 计算冷却 对于一些切换模式的按键 需要有冷却计算
+            coldDown --;
 		//process keyboard events
 		float cameraSpeed = 5.0f * deltaTime;
 		if (keys[GLFW_KEY_W]) {
@@ -200,7 +205,10 @@ int main() {
 			light_postion.x += 1.0f * deltaTime;
 		}
 		if (keys[GLFW_KEY_F]){
-			myCamera.ifFpsMode = !myCamera.ifFpsMode;
+            if(coldDown == 0){
+                myCamera.ifFpsMode = !myCamera.ifFpsMode;
+                coldDown = int(0.5 / deltaTime);
+            }
 		}
 		if (keys[GLFW_KEY_SPACE]){
 			myCamera.isJumping = true;
@@ -268,10 +276,8 @@ int main() {
             current_position.x += 2.0f;
         }
 		
-		
 
 		glBindVertexArray(0);
-
 
 
 		//calculate the frame render cost
