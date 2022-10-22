@@ -53,7 +53,7 @@ public:
     // 碰撞盒的宽度与高度
     // 注意: 摄像机所在位置处于碰撞盒顶层面的中心
     float boxWidth = 0.5f;
-    float boxHeight = 1.5f;
+    float boxHeight = 1.0f;
     float boxLength = 0.5f;
 
 	//constructor
@@ -169,14 +169,16 @@ public:
             XZ_collision = collisionZ_two | collisionZ_one;
         }
 
+        // 判断Y平面是否发生碰撞
         if(XZ_collision){
-            bool collisionY_one =   this->position.y <= currentObject.position.y + currentObject.boxHeight / 2 &
-                                    this->position.y >= currentObject.position.y - currentObject.boxHeight / 2;
-            bool collisionY_two =   this->position.y - this->boxHeight <= currentObject.position.y + currentObject.boxHeight / 2 &
-                                    this->position.y - this->boxHeight >= currentObject.position.y - currentObject.boxHeight / 2;
+            bool collisionY_one =   this->position.y <= currentObject.position.y + currentObject.boxHeight / 2 &&
+                                    this->position.y > currentObject.position.y - currentObject.boxHeight / 2;
+            bool collisionY_two =   this->position.y - this->boxHeight <= currentObject.position.y + currentObject.boxHeight / 2 &&
+                                    this->position.y - this->boxHeight > currentObject.position.y - currentObject.boxHeight / 2;
             return (collisionY_one | collisionY_two);
+        } else{
+            return (false | (this->position.y < 1.0f));
         }
-        return (false | (this->position.y < 1.0f));
     }
 
 private:

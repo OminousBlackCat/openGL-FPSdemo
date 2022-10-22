@@ -187,8 +187,7 @@ int main() {
             // 计算冷却 对于一些切换模式的按键 需要有冷却计算
             coldDown --;
         // 记录当前的摄像机位置 以便后续判断碰撞时使用
-        glm::vec3 currentCameraPosition(myCamera.position);
-
+        glm::vec3 currentCameraPosition(myCamera.position.x, myCamera.position.y, myCamera.position.z);
 
         // 2. 处理key与mouse的消息, 将消息放入消息数组
 		glfwPollEvents();
@@ -234,25 +233,25 @@ int main() {
         // 3. 对物体的位置信息进行更新, 判断是否有相交, 判断是否碰撞
         bool ifCollision = false;
         for(auto object: cubeVector){
-            ifCollision = ifCollision | myCamera.ifCollision(object);
+            ifCollision = ifCollision || myCamera.ifCollision(object);
         }
         if(ifCollision){
-            cout<<"coll"<<endl;
-            myCamera.position = glm::vec3(currentCameraPosition);
-        }
-        else
+            myCamera.position.x = currentCameraPosition.x;
+            myCamera.position.y = currentCameraPosition.y;
+            myCamera.position.z = currentCameraPosition.z;
+        }else
             currentCameraPosition = glm::vec3(myCamera.position);
 
         // 应用重力加速度
+        ifCollision = false;
         myCamera.down(deltaTime);
         for(auto object: cubeVector){
-            ifCollision = ifCollision | myCamera.ifCollision(object);
+            ifCollision = ifCollision || myCamera.ifCollision(object);
         }
         if(ifCollision){
             myCamera.position = currentCameraPosition;
             myCamera.jumpVelocity = 0.0f;
         }
-
 
 
 
@@ -297,13 +296,8 @@ int main() {
         shader1.uniform_vec3(myCamera.position, "viewPos");
 
         glm::vec3 current_position(origin_position.x, origin_position.y, origin_position.z);
-        for (int i = 0; i < 10; i++) {
-            current_position.z = 0.0f;
-            for (int j = 0; j < 10; j++) {
-                cubeVector[i * j * 13 % 4].draw(shader1, projection, view);
-                current_position.z += 2.0f;
-            }
-            current_position.x += 2.0f;
+        for (auto & i : cubeVector) {
+            i.draw(shader1, projection, view);
         }
 
 		glBindVertexArray(0);
