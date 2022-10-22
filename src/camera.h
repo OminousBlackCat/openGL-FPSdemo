@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
+#include "object.h"
 
 // const camera initialize value
 const float YAW = -90.0f;
@@ -46,6 +47,14 @@ public:
 
 	// FPS mode or free mode
 	bool ifFpsMode = true;
+    // if has collision
+    bool ifContinue = true;
+
+    // 碰撞盒的宽度与高度
+    // 注意: 摄像机所在位置处于碰撞盒顶层面的中心
+    float boxWidth = 0.5f;
+    float boxHeight = 1.5f;
+    float boxLength = 0.5f;
 
 	//constructor
 	Camera(glm::vec3 init_postion = glm::vec3(0.0f, 0.0f, 3.0f), float yaw = YAW, float pitch = PITCH) {
@@ -66,6 +75,7 @@ public:
 	}
 
 	void movement(int direction, float deltaTime) {
+        glm::vec3 currentPosition(this->position);
 		if (direction < 0 || direction > 3) {
 			return;
 		}
@@ -112,17 +122,11 @@ public:
 		}
 	}
 
-	void jump(float deltaTime){
-		if(!this->ifFpsMode || !this->isJumping)
+	void down(float deltaTime){
+		if(!this->ifFpsMode)
 			return;
-		if(this->position.y >= 1.0f){
-			position.y += jumpVelocity * deltaTime;
-			jumpVelocity -= this->jumpAcceleration * deltaTime;
-		}else{
-			position.y = 1.0f;
-			this->jumpVelocity = this->jumpInitVelocity;
-			this->isJumping = false;
-		}	
+        position.y += jumpVelocity * deltaTime;
+        jumpVelocity -= this->jumpAcceleration * deltaTime;
 	}
 
 
@@ -147,6 +151,33 @@ public:
 		if (this->zoomAngle > 45.0f)
 			this->zoomAngle = 45.0f;
 	}
+
+    bool ifCollision(const Object& currentObject) const{
+        // 判断照相机的box是否和输入的object(碰撞盒也是个长方体)
+        // 首先在xz平面使用2d-aabb算法判断是否有相交
+        // 计算照相机碰撞盒的x边缘是否在object的两个x边之内
+        bool XZ_collision = false;
+        bool collisionX_one =   this->position.x + this->boxLength / 2 <= currentObject.position.x + currentObject.boxLength / 2 &
+                                this->position.x + this->boxLength / 2 >= currentObject.position.x - currentObject.boxLength / 2;
+        bool collisionX_two =   this->position.x - this->boxLength / 2 <= currentObject.position.x + currentObject.boxLength / 2 &
+                                this->position.x + this->boxLength / 2 >= currentObject.position.x - currentObject.boxLength / 2;
+        if(collisionX_one | collisionX_two){
+            bool collisionZ_one =   this->position.z + this->boxWidth / 2 <= currentObject.position.z + currentObject.boxWidth / 2 &
+                                    this->position.z + this->boxWidth / 2 >= currentObject.position.z - currentObject.boxWidth / 2;
+            bool collisionZ_two =    this->position.z - this->boxWidth / 2 <= currentObject.position.z + currentObject.boxWidth / 2 &
+                                     this->position.z + this->boxWidth / 2 >= currentObject.position.z - currentObject.boxWidth / 2;
+            XZ_collision = collisionZ_two | collisionZ_one;
+        }
+
+        if(XZ_collision){
+            bool collisionY_one =   this->position.y <= currentObject.position.y + currentObject.boxHeight / 2 &
+                                    this->position.y >= currentObject.position.y - currentObject.boxHeight / 2;
+            bool collisionY_two =   this->position.y - this->boxHeight <= currentObject.position.y + currentObject.boxHeight / 2 &
+                                    this->position.y - this->boxHeight >= currentObject.position.y - currentObject.boxHeight / 2;
+            return (collisionY_one | collisionY_two);
+        }
+        return (false | (this->position.y < 1.0f));
+    }
 
 private:
 	void updateCameraVector() {

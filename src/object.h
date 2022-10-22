@@ -1,6 +1,7 @@
 //
 // Created by seu-wxy on 2022/10/7.
 //
+#pragma once
 
 #ifndef OPENGL_FPSDEMO_OBJECT_H
 #define OPENGL_FPSDEMO_OBJECT_H
@@ -20,7 +21,7 @@ public:
         // 在构造函数里初始化贴图与模型矩阵, 以及物体的初始位置
         this->bufferTexture(textureURL, specTextureURL);
         this->modelMat = glm::mat4(1.0f);
-        this->position = glm::vec3(1.0f);
+        this->position = glm::vec3(0.0f);
     }
 
     virtual void bufferVAO() = 0;
@@ -70,10 +71,12 @@ public:
         this->position += translation_value;
     }
 
-protected:
     unsigned int VAO;
     unsigned int textureID;
     unsigned int specTextureID;
+    float boxWidth;
+    float boxLength;
+    float boxHeight;
     glm::vec3 position;
     glm::mat4 modelMat;
     float vertex_array;
@@ -84,6 +87,9 @@ class CubeWithTex final : public Object{
 public:
     CubeWithTex(const std::string& textureURL, const std::string& specTextureURL): Object(textureURL, specTextureURL){
         this->bufferVAO();
+        this->boxWidth = 1.0f;
+        this->boxHeight = 1.0f;
+        this->boxLength = 1.0f;
     }
     void bufferVAO() final{
         // bind VAO

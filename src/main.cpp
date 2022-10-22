@@ -186,6 +186,8 @@ int main() {
         if(coldDown > 0)
             // 计算冷却 对于一些切换模式的按键 需要有冷却计算
             coldDown --;
+        // 记录当前的摄像机位置 以便后续判断碰撞时使用
+        glm::vec3 currentCameraPosition(myCamera.position);
 
 
         // 2. 处理key与mouse的消息, 将消息放入消息数组
@@ -223,22 +225,41 @@ int main() {
             }
 		}
 		if (keys[GLFW_KEY_SPACE]){
+            myCamera.jumpVelocity = 5.0f;
 			myCamera.isJumping = true;
 		}
 
 
+
         // 3. 对物体的位置信息进行更新, 判断是否有相交, 判断是否碰撞
+        bool ifCollision = false;
+        for(auto object: cubeVector){
+            ifCollision = ifCollision | myCamera.ifCollision(object);
+        }
+        if(ifCollision){
+            cout<<"coll"<<endl;
+            myCamera.position = glm::vec3(currentCameraPosition);
+        }
+        else
+            currentCameraPosition = glm::vec3(myCamera.position);
+
+        // 应用重力加速度
+        myCamera.down(deltaTime);
+        for(auto object: cubeVector){
+            ifCollision = ifCollision | myCamera.ifCollision(object);
+        }
+        if(ifCollision){
+            myCamera.position = currentCameraPosition;
+            myCamera.jumpVelocity = 0.0f;
+        }
+
+
 
 
         // 4. 对camera进行操作(包括camera物理实体的运动计算以及view矩阵和perspective矩阵的计算)
-		// 修正照相机在FPS模式下的位置 如果y值高于1.0, 就开始自由下落直到1.0
-		if (myCamera.position.y > 1.0f && myCamera.ifFpsMode){
-			myCamera.position.y -= cameraSpeed;
-			if (myCamera.position.y < 1.0f)
-				myCamera.position.y = 1.0f;
-		}
 
-		myCamera.jump(deltaTime);
+
+
 		
 
 		// define matrix
