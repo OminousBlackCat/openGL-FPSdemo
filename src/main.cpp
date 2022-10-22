@@ -171,13 +171,25 @@ int main() {
     int coldDown = 500;
 
 	while (!glfwWindowShouldClose(mainWindow)) {
-		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // --------------------重构游戏循环(渲染循环)-------------------------
+        // --------------------渲染循环流程如下:----------------------------
+        // 1. 初始化gl的背景 计算一些参数与循环内计数所需要的变量
+        // 2. 处理key与mouse的消息, 将消息放入消息数组
+        // 3. 对物体的位置信息进行更新, 判断是否有相交, 判断是否碰撞
+        // 4. 对camera进行操作(包括camera物理实体的运动计算以及view矩阵和perspective矩阵的计算)
+        // 5. 绘制物体
 
-		glfwPollEvents();
+        // 1. 初始化gl的背景颜色 计算一些参数与循环内计数所需要的变量
+
+		glClearColor(0.3f, 0.3f, 0.3f, 1.0f); // 设置背景颜色为浅灰色
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         if(coldDown > 0)
             // 计算冷却 对于一些切换模式的按键 需要有冷却计算
             coldDown --;
+
+
+        // 2. 处理key与mouse的消息, 将消息放入消息数组
+		glfwPollEvents();
 		//process keyboard events
 		float cameraSpeed = 5.0f * deltaTime;
 		if (keys[GLFW_KEY_W]) {
@@ -214,6 +226,11 @@ int main() {
 			myCamera.isJumping = true;
 		}
 
+
+        // 3. 对物体的位置信息进行更新, 判断是否有相交, 判断是否碰撞
+
+
+        // 4. 对camera进行操作(包括camera物理实体的运动计算以及view矩阵和perspective矩阵的计算)
 		// 修正照相机在FPS模式下的位置 如果y值高于1.0, 就开始自由下落直到1.0
 		if (myCamera.position.y > 1.0f && myCamera.ifFpsMode){
 			myCamera.position.y -= cameraSpeed;
@@ -225,23 +242,16 @@ int main() {
 		
 
 		// define matrix
-		glm::mat4 model = glm::mat4(1.0f);
-		
-
 		glm::mat4 view = glm::mat4(1.0f);
 		view = myCamera.getLookAtMat();
 
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(myCamera.zoomAngle, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
+        // 5. 绘制物体
         // 首先绘制天空盒
         glm::mat4 skyView = glm::mat4(glm::mat3(view));
         mySkyBox.draw(shader_skyBox, projection, skyView);
-
-
-
-
-
 
 		// 使用shader1(带光照的 物体所使用的着色器)
 		shader1.use();
@@ -271,11 +281,9 @@ int main() {
             for (int j = 0; j < 10; j++) {
                 cubeVector[i * j * 13 % 4].draw(shader1, projection, view);
                 current_position.z += 2.0f;
-                model = glm::mat4(1.0f); // 重置model矩阵, 不能直接在之前的基础上做变换
             }
             current_position.x += 2.0f;
         }
-		
 
 		glBindVertexArray(0);
 
