@@ -5,14 +5,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include<iostream>
+#include"stb_image.h"
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
-#include"shader.h"
-#include"stb_image.h"
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
 #include<cmath>
+#include"mesh.h"
+#include"shader.h"
 #include"camera.h"
 #include"texture.h"
 #include "sky_box.h"

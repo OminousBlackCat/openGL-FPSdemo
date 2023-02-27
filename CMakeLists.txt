@@ -2,11 +2,12 @@
 cmake_minimum_required(VERSION 3.10)
 # set project name
 project(openGL-FPSdemo VERSION 0.1)
-
+# set scr dictory
+aux_source_directory(./src SRCS)
 # add the executable
-add_executable(openGL-FPSdemo 
-    src/main.cpp
-        src/object.h)
+add_executable(openGL-FPSdemo ${SRCS})
+# add include head file
+include_directories(./include)
 
 # set cpp standard with 11 version
 set_property(TARGET openGL-FPSdemo PROPERTY CXX_STANDARD 11)
