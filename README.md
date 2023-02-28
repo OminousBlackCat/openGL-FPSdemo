@@ -4,8 +4,8 @@
 
 
 ## 使用模板(CMake)
-https://github.com/ArthurSonzogni/OpenGL_CMake_Skeleton
-https://github.com/cmmw/imgui-glfw-glad-glm
++ https://github.com/ArthurSonzogni/OpenGL_CMake_Skeleton
++ https://github.com/cmmw/imgui-glfw-glad-glm
 
 ## 构建方式
 

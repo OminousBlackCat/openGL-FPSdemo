@@ -25,7 +25,7 @@ private:
 
 
 public:
-    explicit Object(string file_url = ""){
+    explicit Object(const string& file_url = ""){
         if(file_url.empty())
             return;
         std::fstream cur_obj_file;
