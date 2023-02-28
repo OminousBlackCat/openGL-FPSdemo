@@ -9,7 +9,7 @@ https://github.com/cmmw/imgui-glfw-glad-glm
 
 ## 构建方式
 
-需递归拉取**lib\\**下的[glew](https://github.com/Perlmint/glew-cmake/tree/8260c05ee0121094a0dc9a53f610f514659763d6)、[glfw](https://github.com/glfw/glfw/tree/dd8a678a66f1967372e5a5e3deac41ebf65ee127)与[glm](https://github.com/g-truc/glm/tree/cc98465e3508535ba8c7f6208df934c156a018dc)库，CMake将递归构建并链接到项目内
+需递归拉取lib\下的[glew](https://github.com/Perlmint/glew-cmake/tree/8260c05ee0121094a0dc9a53f610f514659763d6)、[glfw](https://github.com/glfw/glfw/tree/dd8a678a66f1967372e5a5e3deac41ebf65ee127)与[glm](https://github.com/g-truc/glm/tree/cc98465e3508535ba8c7f6208df934c156a018dc)库，CMake将递归构建并链接到项目内
 
 之后正常构建即可
 
