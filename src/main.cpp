@@ -19,7 +19,8 @@
 #include "sky_box.h"
 #include <ctime>
 #include"asset.hpp"
-#include"object.h"
+#include"shape.h"
+#include "object.h"
 
 
 // force to use amd graphics card

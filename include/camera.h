@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
-#include "object.h"
+#include "shape.h"
 
 // const camera initialize value
 const float YAW = -90.0f;
@@ -152,7 +152,7 @@ public:
 			this->zoomAngle = 45.0f;
 	}
 
-    bool ifCollision(const Object& currentObject) const{
+    bool ifCollision(const Shape& currentObject) const{
         // 判断照相机的box是否和输入的object(碰撞盒也是个长方体)
         // 首先在xz平面使用2d-aabb算法判断是否有相交
         // 计算照相机碰撞盒的x边缘是否在object的两个x边之内

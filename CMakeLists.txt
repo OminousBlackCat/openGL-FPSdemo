@@ -5,7 +5,7 @@ project(openGL-FPSdemo VERSION 0.1)
 # set scr dictory
 aux_source_directory(./src SRCS)
 # add the executable
-add_executable(openGL-FPSdemo ${SRCS})
+add_executable(openGL-FPSdemo ${SRCS} include/object.h)
 # add include head file
 include_directories(./include)
 

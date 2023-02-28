@@ -1,272 +1,118 @@
 //
-// Created by seu-wxy on 2022/10/7.
+// Created by seu-wxy on 2023/2/28.
 //
-#pragma once
 
 #ifndef OPENGL_FPSDEMO_OBJECT_H
 #define OPENGL_FPSDEMO_OBJECT_H
 
 #endif //OPENGL_FPSDEMO_OBJECT_H
 
+#include<vector>
 #include<string>
-#include<glm/glm.hpp>
+#include<iostream>
+#include<fstream>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
-#include"shader.h"
+#include<glm/glm.hpp>
+#include "mesh.h"
 
 
 class Object{
-public:
-    Object(const std::string& textureURL, const std::string& specTextureURL){
-        // 在构造函数里初始化贴图与模型矩阵, 以及物体的初始位置
-        this->bufferTexture(textureURL, specTextureURL);
-        this->modelMat = glm::mat4(1.0f);
-        this->position = glm::vec3(0.0f);
-    }
-
-    virtual void bufferVAO() = 0;
-
-    virtual void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat) = 0;
-
-    void bufferTexture(const std::string& textureURL, const std::string& specTextureURL){
-        // bind texture
-        int width, height, channelCount;
-        unsigned char* textureContent = stbi_load(textureURL.c_str(), &width, &height, &channelCount, 0);
-
-        glGenTextures(1, &textureID);
-        glBindTexture(GL_TEXTURE_2D, this->textureID);
-        // set the texture wrapping parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        // set texture filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        int RGBMode = GL_RGB;
-        if(channelCount == 4)
-            RGBMode = GL_RGBA;
-        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(textureContent);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        textureContent = stbi_load(specTextureURL.c_str(), &width, & height, &channelCount, 0);
-        glGenTextures(1, &this->specTextureID);
-        glBindTexture(GL_TEXTURE_2D, this->specTextureID);
-        // set the texture wrapping parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        // set texture filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        if(channelCount == 4)
-            RGBMode = GL_RGBA;
-        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(textureContent);
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    void translation(glm::vec3 translation_value){
-        modelMat = glm::translate(modelMat, translation_value);
-        this->position += translation_value;
-    }
-
-    unsigned int VAO;
-    unsigned int textureID;
-    unsigned int specTextureID;
-    float boxWidth;
-    float boxLength;
-    float boxHeight;
-    glm::vec3 position;
-    glm::mat4 modelMat;
-    float vertex_array;
-};
-
-
-class CubeWithTex final : public Object{
-public:
-    CubeWithTex(const std::string& textureURL, const std::string& specTextureURL): Object(textureURL, specTextureURL){
-        this->bufferVAO();
-        this->boxWidth = 1.0f;
-        this->boxHeight = 1.0f;
-        this->boxLength = 1.0f;
-    }
-    void bufferVAO() final{
-        // bind VAO
-        glGenVertexArrays(1, &this->VAO);
-        glBindVertexArray(this->VAO);
-        // gen VBO
-        unsigned int verticesID;
-        glGenBuffers(1, &verticesID);
-        glBindBuffer(GL_ARRAY_BUFFER, verticesID);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(this->cube_vertex), this->cube_vertex, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-        glBindVertexArray(0);
-    }
-    void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat) final{
-        shader.use();
-
-        // 输入uniform变量
-        shader.uniform_mat4(projectionMat, "projectionMat");
-        shader.uniform_mat4(viewMat, "viewMat");
-        shader.uniform_mat4(this->modelMat, "modelMat");
-
-
-        glBindVertexArray(this->VAO);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, this->textureID);
-        glUniform1i(glGetUniformLocation(shader.ID, "material.objectTexture"), 2);
-        glActiveTexture(GL_TEXTURE3); // 启用纹理1 作为镜面反射纹理
-        glBindTexture(GL_TEXTURE_2D, this->specTextureID);
-        glUniform1i(glGetUniformLocation(shader.ID, "material.specTexture"), 3);
-        glDrawArrays(GL_TRIANGLES, 0, vertex_array_size / 8);
-        glBindVertexArray(0);
-    }
-
 private:
-    static const int vertex_array_size = 288;
-    const float cube_vertex[vertex_array_size] = {
-            // ---position--		--texture--  --normal--
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,    0.0f,  0.0f, -1.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 0.0f,    0.0f,  0.0f, -1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,    0.0f,  0.0f, -1.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,    0.0f,  0.0f, -1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,    0.0f,  0.0f, -1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,    0.0f,  0.0f, -1.0f,
+    vector<Mesh> meshes;
+    string mtl_file_url;
+    string current_url;
 
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,    0.0f,  0.0f, 1.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,     0.0f,  0.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,	 0.0f,  0.0f, 1.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 1.0f,	 0.0f,  0.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,	 0.0f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	 0.0f,  0.0f, 1.0f,
-
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	-1.0f,  0.0f,  0.0f,
-            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	-1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,   -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	-1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	-1.0f,  0.0f,  0.0f,
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	-1.0f,  0.0f,  0.0f,
-
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 1.0f,  0.0f,  0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 1.0f,  0.0f,  0.0f,
-            0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	 1.0f,  0.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 1.0f,  0.0f,  0.0f,
-
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f, -0.5f,  1.0f, 1.0f,	 0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.0f, -1.0f,  0.0f,
-            0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.0f, -1.0f,  0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	 0.0f, -1.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 0.0f, -1.0f,  0.0f,
-
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,	 0.0f,  1.0f,  0.0f,
-            0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 0.0f,  1.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,	 0.0f,  1.0f,  0.0f
-    };
-};
-
-
-class Floor{
-private:
-    unsigned int floorVAO;
-    unsigned int textureID;
-    unsigned int specTextureID;
-    glm::mat4 modelMat{};
-    const float floor_vertex[48] = {
-              -2.0f, 0.f,  2.f, 0.f, 0.f, 0.f, 1.0f, 0.0f,
-               2.f, 0.f,  2.f, 0.f, 100.f,0.f, 1.0f, 0.0f,
-              -2.f, 0.f, -2.f, 100.f, 0.f,0.f, 1.0f, 0.0f,
-               2.f,0.f, 2.f,0.f, 100.f,0.f, 1.0f, 0.0f,
-             -2.f,0.f,-2.f, 100.f, 0.f,0.f, 1.0f, 0.0f,
-              2.f,0.f,-2.f, 100.f, 100.f,0.f, 1.0f, 0.0f
-    };
 
 public:
-    Floor(const std::string& textureURL, const std::string& specTextureURL){
-        // bind texture
-        int width, height, channelCount;
-        unsigned char* textureContent = stbi_load(textureURL.c_str(), &width, &height, &channelCount, 0);
-
-        glGenTextures(1, &textureID);
-        glBindTexture(GL_TEXTURE_2D, this->textureID);
-        // set the texture wrapping parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        // set texture filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        int RGBMode = GL_RGB;
-        if(channelCount == 4)
-            RGBMode = GL_RGBA;
-        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(textureContent);  
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        textureContent = stbi_load(specTextureURL.c_str(), &width, & height, &channelCount, 0);
-        glGenTextures(1, &this->specTextureID);
-        glBindTexture(GL_TEXTURE_2D, this->specTextureID);
-        // set the texture wrapping parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        // set texture filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        if(channelCount == 4)
-            RGBMode = GL_RGBA;
-        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(textureContent);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        // bind VAO
-        glGenVertexArrays(1, &this->floorVAO);
-        glBindVertexArray(this->floorVAO);
-        // gen VBO
-        unsigned int verticesID;
-        glGenBuffers(1, &verticesID);
-        glBindBuffer(GL_ARRAY_BUFFER, verticesID);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(this->floor_vertex), this->floor_vertex, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-        glBindVertexArray(0);
-
-        this->modelMat = glm::mat4(1.0f);
-        modelMat = glm::scale(modelMat, glm::vec3(100.f, 100.f, 100.f));
+    explicit Object(string file_url = ""){
+        if(file_url.empty())
+            return;
+        std::fstream cur_obj_file;
+        cur_obj_file.open(MODEL_DIR"/" + file_url, ios::in);
+        std::cout<<"Obj file: ["<<MODEL_DIR"/" + file_url<<"] is loading..."<<endl;
+        if(cur_obj_file.is_open()){
+            string cur_line;
+            // 一行一行开始读
+            // 一个mesh的顶点坐标数组
+            vector<glm::vec3> cur_vertices;
+            // 一个mesh的UV数组
+            vector<glm::vec2> cur_vTexture;
+            // 一个mesh的法向量数组
+            vector<glm::vec3> cur_vNormal;
+            // 当前的mesh
+            Mesh cur_mesh;
+            while(std::getline(cur_obj_file, cur_line)){
+                // 如果是注释, 直接跳过
+                if(cur_line.substr(0, 1) == "#")
+                    continue;
+                // 如果是声明mtl文件位置行, 输入mtl_file_url
+                if(cur_line.substr(0, 6) == "mtllib"){
+                    mtl_file_url = cur_line.substr(7, string::npos);
+                    continue;
+                }
+                // 如果是"o MESH_NAME"行, 开始新的Mesh
+                if(cur_line.substr(0, 2) == "o "){
+                    // 判断mesh是否为空, 不为空就把之前的mesh推入数组
+                    if(!cur_vertices.empty()){
+                        meshes.push_back(cur_mesh);
+                        // 清空所有数组
+                        cur_vertices.clear();
+                        cur_vTexture.clear();
+                        cur_vNormal.clear();
+                        cur_mesh = Mesh();
+                    }
+                    continue;
+                }
+                // 如果是"v c1 c2 c3"行, 放入vertices
+                if(cur_line.substr(0, 2) == "v "){
+                    std::istringstream stm(cur_line.substr(2));
+                    glm::vec3 v;
+                    stm >> v.x;
+                    stm >> v.y;
+                    stm >> v.z;
+                    cur_vertices.push_back(v);
+                    continue;
+                }
+                // 如果是"vt c1 c2"行, 放入vT
+                if(cur_line.substr(0, 2) == "vt"){
+                    std::istringstream stm(cur_line.substr(3));
+                    glm::vec2 v;
+                    stm >> v.x;
+                    stm >> v.y;
+                    cur_vTexture.push_back(v);
+                    continue;
+                }
+                // vN同理
+                if(cur_line.substr(0, 2) == "vN"){
+                    std::istringstream stm(cur_line.substr(3));
+                    glm::vec3 v;
+                    stm >> v.x;
+                    stm >> v.y;
+                    stm >> v.z;
+                    cur_vNormal.push_back(v);
+                    continue;
+                }
+                // 遇到 "f v1/vT1/vN1 v2/vT2/vN2 ..."则可以开始构建Mesh内的数据结构
+                if(cur_line.substr(0, 2) == "f "){
+                    std::stringstream ss(cur_line.substr(2));
+                    string cur_set;
+                    vector<string> tmp_strings;
+                    // split by space
+                    while(std::getline(ss, cur_set, ' ')){
+                        // 将string输入到一个temp中, 判断有多少个顶点
+                        tmp_strings.push_back(cur_set);
+                    }
+                    for(int i = 0;i<tmp_strings.size() - 2;i++){
+                        vector<float> tmp_floats;
+                        string v1 = tmp_strings[0];
+                        string v2 = tmp_strings[i];
+                        string v3 = tmp_strings[i + 1];
+                    }
+                }
+            }
+        }else
+            cout << "OBJ file: [" << MODEL_DIR"/" + file_url << "] could not open...";
     }
 
-    void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
-        shader.use();
-
-        // 输入uniform变量
-        shader.uniform_mat4(projectionMat, "projectionMat");
-        shader.uniform_mat4(viewMat, "viewMat");
-        shader.uniform_mat4(this->modelMat, "modelMat");
-
-        
-        glBindVertexArray(this->floorVAO); 
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, this->textureID);
-        glUniform1i(glGetUniformLocation(shader.ID, "material.objectTexture"), 2);
-        glActiveTexture(GL_TEXTURE3); // 启用纹理1 作为镜面反射纹理
-        glBindTexture(GL_TEXTURE_2D, this->specTextureID);
-        glUniform1i(glGetUniformLocation(shader.ID, "material.specTexture"), 3);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-    }
 };
