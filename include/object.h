@@ -20,19 +20,18 @@
 class Object{
 private:
     vector<Mesh> meshes;
-    string mtl_file_url;
-    string current_url;
-
+    std::string mtl_file_url;
+    std::string current_url;
 
 public:
-    explicit Object(const string& file_url = ""){
+    explicit Object(const std::string& file_url = ""){
         if(file_url.empty())
             return;
         std::fstream cur_obj_file;
-        cur_obj_file.open(MODEL_DIR"/" + file_url, ios::in);
+        cur_obj_file.open(file_url, ios::in);
         std::cout<<"Obj file: ["<<MODEL_DIR"/" + file_url<<"] is loading..."<<endl;
         if(cur_obj_file.is_open()){
-            string cur_line;
+            std::string cur_line;
             // 一行一行开始读
             // 一个mesh的顶点坐标数组
             vector<glm::vec3> cur_vertices;
@@ -48,7 +47,7 @@ public:
                     continue;
                 // 如果是声明mtl文件位置行, 输入mtl_file_url
                 if(cur_line.substr(0, 6) == "mtllib"){
-                    mtl_file_url = cur_line.substr(7, string::npos);
+                    mtl_file_url = cur_line.substr(7, std::string::npos);
                     continue;
                 }
                 // 如果是"o MESH_NAME"行, 开始新的Mesh
@@ -56,10 +55,7 @@ public:
                     // 判断mesh是否为空, 不为空就把之前的mesh推入数组
                     if(!cur_vertices.empty()){
                         meshes.push_back(cur_mesh);
-                        // 清空所有数组
-                        cur_vertices.clear();
-                        cur_vTexture.clear();
-                        cur_vNormal.clear();
+                        // 清空当前mesh
                         cur_mesh = Mesh();
                     }
                     continue;
@@ -84,7 +80,7 @@ public:
                     continue;
                 }
                 // vN同理
-                if(cur_line.substr(0, 2) == "vN"){
+                if(cur_line.substr(0, 2) == "vn"){
                     std::istringstream stm(cur_line.substr(3));
                     glm::vec3 v;
                     stm >> v.x;
@@ -96,23 +92,76 @@ public:
                 // 遇到 "f v1/vT1/vN1 v2/vT2/vN2 ..."则可以开始构建Mesh内的数据结构
                 if(cur_line.substr(0, 2) == "f "){
                     std::stringstream ss(cur_line.substr(2));
-                    string cur_set;
-                    vector<string> tmp_strings;
+                    std::string cur_set;
+                    vector<std::string> tmp_strings;
                     // split by space
                     while(std::getline(ss, cur_set, ' ')){
                         // 将string输入到一个temp中, 判断有多少个顶点
                         tmp_strings.push_back(cur_set);
                     }
+                    // 如果一个f 包含多个顶点, 则按照以下算法拆成三角形:
+                    // 算法 -----
+                    //      f contains n vertices
+                    //      for i from 1 to n - 2:
+                    //          add triangle with vertices[1, i, i + 1]
                     for(int i = 0;i<tmp_strings.size() - 2;i++){
                         vector<float> tmp_floats;
-                        string v1 = tmp_strings[0];
-                        string v2 = tmp_strings[i];
-                        string v3 = tmp_strings[i + 1];
+                        vector<int> tmp_index;
+                        // 获得一行f, 并去除'/' 输出所有序号
+                        std::string vets = tmp_strings[0] + "/";
+                        vets += tmp_strings[i + 1] + "/";
+                        vets += tmp_strings[i + 2];
+                        // 注意此处获得的序号是从1开始计数的
+                        ss = std::stringstream (vets);
+                        while(std::getline(ss, cur_set, '/')){
+                            tmp_index.push_back(std::stoi(cur_set) - 1);
+                        }
+                        // tmp_index 中顺序为 [ v1, vT1, vN1, v2, vT2, vN2, ..., vn, vTn, vNn]
+                        for(int _i = 0; _i < 3; ++_i){
+                            // 获得一个顶点的完整数据 加入到tmp_floats中
+                            int _t_index = _i * 3;
+                            // v
+                            tmp_floats.push_back(cur_vertices[tmp_index[_t_index]].x);
+                            tmp_floats.push_back(cur_vertices[tmp_index[_t_index]].y);
+                            tmp_floats.push_back(cur_vertices[tmp_index[_t_index]].z);
+                            // vT
+                            tmp_floats.push_back(cur_vTexture[tmp_index[_t_index + 1]].x);
+                            tmp_floats.push_back(cur_vTexture[tmp_index[_t_index + 1]].y);
+                            // vN
+                            tmp_floats.push_back(cur_vNormal[tmp_index[_t_index + 2]].x);
+                            tmp_floats.push_back(cur_vNormal[tmp_index[_t_index + 2]].y);
+                            tmp_floats.push_back(cur_vNormal[tmp_index[_t_index + 2]].z);
+                            // 可以保证mesh中添加的顺序都是正确的, 顺序的三个点为三角形三个顶点
+                            cur_mesh.addVertexData(tmp_floats);
+                            tmp_floats.clear();
+                        }
                     }
                 }
             }
+            // 别忘了读完把最后的mesh也存进去
+            this->meshes.push_back(cur_mesh);
         }else
             cout << "OBJ file: [" << MODEL_DIR"/" + file_url << "] could not open...";
+
+        // 读取成功后 对mesh进行初始化
+        for(auto &m : this->meshes){
+            if(m.empty()){
+                cout << "One of the obj mesh is empty!!! please check obj file format !"<<endl;
+                break;
+            }
+            m.processVAO();
+        }
+    }
+
+    void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
+        for(auto &m : this->meshes)
+            m.draw(shader, projectionMat, viewMat);
+    }
+
+    void translation(glm::vec3 translation_value){
+        for(auto &m: this->meshes){
+            m.translation(translation_value);
+        }
     }
 
 };

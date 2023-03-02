@@ -125,7 +125,9 @@ int main() {
 
 	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-
+    // 测试OBJ
+    Object test_spider(MODEL_DIR"/spider/Only_Spider_with_Animations_Export.obj");
+    test_spider.translation(glm::vec3(0.0f, 0.5f, -200.f));
 
 
 	// 初始化天空盒所需的纹理图片
@@ -164,8 +166,8 @@ int main() {
 
 
 	Shader shader1(SHADER_DIR"/vertexShader.vs", SHADER_DIR"/fragmentShader.fs");
-	Shader shader_floor(SHADER_DIR"/floorVertexShader.vs", SHADER_DIR"/floorFragShader.fs");
     Shader shader_skyBox(SHADER_DIR"/skyVertexShader.vs", SHADER_DIR"/skyFragShader.fs");
+    Shader test_shader(SHADER_DIR"/vertexShader.vs", SHADER_DIR"/blackFragShader.fs");
 
 
 	float gree_axis_value = 1.0f;
@@ -296,6 +298,8 @@ int main() {
         myFloor.draw(shader1, projection, view);
 
         shader1.uniform_vec3(myCamera.position, "viewPos");
+
+        test_spider.draw(test_shader, projection, view);
 
         glm::vec3 current_position(origin_position.x, origin_position.y, origin_position.z);
         for (auto & i : cubeVector) {
