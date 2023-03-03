@@ -32,14 +32,22 @@ private:
     // spec texture ID (if have)
     unsigned int specTextureID;
     // model matrix
-    glm::mat4 modelMat{};
-    // 模型位置
+    glm::mat4 modelMat;
+    // 平移矩阵, 用来获得最后的modelMat
+    glm::mat4 translationMat;
+    // 缩放矩阵, 用来获得最后的ModelMat
+    glm::mat4 scaleMat;
+    // 模型位置, 和object共享位置
     glm::vec3 position;
 
 public:
     Mesh(){
+        // 初始化成员变量
         this->mtlName = "";
-        position = glm::vec3(0.0f);
+        this->position = glm::vec3(0.0f);
+        this->translationMat = glm::mat4(1.0f);
+        this->scaleMat = glm::mat4(1.0f);
+        this->modelMat = glm::mat4(1.0f);
         vBuffer.clear();
     }
 
@@ -76,10 +84,8 @@ public:
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
         glBindVertexArray(0);
-
-        this->modelMat = glm::mat4(1.0f);
-        modelMat = glm::scale(modelMat, glm::vec3(0.01f, 0.01f, 0.01f));
     }
+
 
     //  绘制mesh
     void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
@@ -102,9 +108,27 @@ public:
         glBindVertexArray(0);
     }
 
+    void setPosition(glm::vec3 new_position){
+        this->translationMat = glm::translate(translationMat, new_position - this->position);
+        this->position = new_position;
+        this->modelMat = this->translationMat * this->scaleMat;
+    }
+
+    void setPosition(float n_x, float n_y, float n_z){
+        this->translationMat = glm::translate(translationMat, glm::vec3(n_x, n_y, n_z) - this->position);
+        this->position = glm::vec3(n_x, n_y, n_z);
+        this->modelMat = this->translationMat * this->scaleMat;
+    }
+
+    void scale(float rate){
+        this->scaleMat = glm::scale(scaleMat, glm::vec3(rate, rate ,rate));
+        this->modelMat = this->translationMat * this->scaleMat;
+    }
+
     void translation(glm::vec3 translation_value){
-        modelMat = glm::translate(modelMat, translation_value);
+        this->translationMat = glm::translate(translationMat, translation_value);
         this->position += translation_value;
+        this->modelMat = this->translationMat * this->scaleMat;
     }
 
 };

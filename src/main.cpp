@@ -127,8 +127,9 @@ int main() {
 
     // 测试OBJ
     Object test_spider(MODEL_DIR"/spider/Only_Spider_with_Animations_Export.obj");
-    test_spider.translation(glm::vec3(0.0f, 0.5f, -200.f));
-
+    test_spider.scale(0.01f);
+    test_spider.translation(glm::vec3(0.0f, 0.0f, -1.5f));
+    test_spider.scale(0.01f);
 
 	// 初始化天空盒所需的纹理图片
     // 注册天空盒

@@ -47,7 +47,7 @@ public:
 
 	// FPS mode or free mode
 	bool ifFpsMode = true;
-    // if has collision
+    // if camera has collision
     bool ifContinue = true;
 
     // 碰撞盒的宽度与高度

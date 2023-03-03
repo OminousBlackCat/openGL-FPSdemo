@@ -22,6 +22,8 @@ private:
     vector<Mesh> meshes;
     std::string mtl_file_url;
     std::string current_url;
+    // 模型在世界坐标系中的位置
+    glm::vec3 position;
 
 public:
     explicit Object(const std::string& file_url = ""){
@@ -142,7 +144,8 @@ public:
             this->meshes.push_back(cur_mesh);
         }else
             cout << "OBJ file: [" << MODEL_DIR"/" + file_url << "] could not open...";
-
+        // 初始化object的成员变量
+        this->position = glm::vec3(0.0f);
         // 读取成功后 对mesh进行初始化
         for(auto &m : this->meshes){
             if(m.empty()){
@@ -156,6 +159,25 @@ public:
     void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
         for(auto &m : this->meshes)
             m.draw(shader, projectionMat, viewMat);
+    }
+
+    void setPosition(glm::vec3 new_position){
+        this->position = new_position;
+        for(auto &m: this->meshes){
+            m.setPosition(new_position);
+        }
+    }
+
+    void setPosition(float n_x, float n_y, float n_z){
+        this->position = glm::vec3(n_x, n_y, n_z);
+        for(auto &m: this->meshes){
+            m.setPosition(n_x, n_y, n_z);
+        }
+    }
+
+    void scale(float rate){
+        for(auto &m: this->meshes)
+            m.scale(rate);
     }
 
     void translation(glm::vec3 translation_value){
