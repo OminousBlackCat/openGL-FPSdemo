@@ -28,7 +28,7 @@ private:
     // VAO ID
     unsigned int _index_VAO;
     // texture ID
-    //unsigned int textureID;
+    unsigned int textureID;
     // spec texture ID (if have)
     unsigned int specTextureID;
     // model matrix

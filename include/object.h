@@ -20,18 +20,16 @@
 class Object{
 private:
     vector<Mesh> meshes;
-    std::string mtl_file_url;
     std::string current_url;
     // 模型在世界坐标系中的位置
     glm::vec3 position;
 
-public:
-    explicit Object(const std::string& file_url = ""){
-        if(file_url.empty())
+    void readObjFile(const std::string& obj_file_url = ""){
+        if(obj_file_url.empty())
             return;
         std::fstream cur_obj_file;
-        cur_obj_file.open(file_url, ios::in);
-        std::cout<<"Obj file: ["<<MODEL_DIR"/" + file_url<<"] is loading..."<<endl;
+        cur_obj_file.open(obj_file_url, ios::in);
+        std::cout<<"Obj file: ["<<MODEL_DIR"/" + obj_file_url<<"] is loading..."<<endl;
         if(cur_obj_file.is_open()){
             std::string cur_line;
             // 一行一行开始读
@@ -49,7 +47,7 @@ public:
                     continue;
                 // 如果是声明mtl文件位置行, 输入mtl_file_url
                 if(cur_line.substr(0, 6) == "mtllib"){
-                    mtl_file_url = cur_line.substr(7, std::string::npos);
+
                     continue;
                 }
                 // 如果是"o MESH_NAME"行, 开始新的Mesh
@@ -143,7 +141,7 @@ public:
             // 别忘了读完把最后的mesh也存进去
             this->meshes.push_back(cur_mesh);
         }else
-            cout << "OBJ file: [" << MODEL_DIR"/" + file_url << "] could not open...";
+            cout << "OBJ file: [" << MODEL_DIR"/" + obj_file_url << "] could not open...";
         // 初始化object的成员变量
         this->position = glm::vec3(0.0f);
         // 读取成功后 对mesh进行初始化
@@ -154,6 +152,15 @@ public:
             }
             m.processVAO();
         }
+    }
+
+    void readMtlFile(const std::string& mtl_file_url = ""){
+
+    }
+
+public:
+    explicit Object(const std::string& file_url = ""){
+
     }
 
     void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
