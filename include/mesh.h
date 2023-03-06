@@ -11,6 +11,7 @@
 
 using namespace std;
 
+// Mesh为渲染的最小单位, 使用单个
 class Mesh{
 
 private:
@@ -43,7 +44,6 @@ private:
 public:
     Mesh(){
         // 初始化成员变量
-        this->mtlName = "";
         this->position = glm::vec3(0.0f);
         this->translationMat = glm::mat4(1.0f);
         this->scaleMat = glm::mat4(1.0f);
@@ -84,6 +84,8 @@ public:
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
         glBindVertexArray(0);
+
+
     }
 
 

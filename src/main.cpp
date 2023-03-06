@@ -10,7 +10,6 @@
 #include<GLFW/glfw3.h>
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
-#include<glm/gtc/type_ptr.hpp>
 #include<cmath>
 #include"mesh.h"
 #include"shader.h"
@@ -129,7 +128,6 @@ int main() {
     Object test_spider(MODEL_DIR"/spider/Only_Spider_with_Animations_Export.obj");
     test_spider.scale(0.01f);
     test_spider.translation(glm::vec3(0.0f, 0.0f, -1.5f));
-    test_spider.scale(0.01f);
 
 	// 初始化天空盒所需的纹理图片
     // 注册天空盒
