@@ -6,6 +6,13 @@
 ## 使用模板(CMake)
 + https://github.com/ArthurSonzogni/OpenGL_CMake_Skeleton
 + https://github.com/cmmw/imgui-glfw-glad-glm
+## 外部依赖库
+
++ [glad](https://github.com/Perlmint/glew-cmake/tree/8260c05ee0121094a0dc9a53f610f514659763d6)(在对应平台上加载对应的openGL函数指针)
++ [glfw](https://github.com/glfw/glfw/tree/dd8a678a66f1967372e5a5e3deac41ebf65ee127)(创建openGL上下文、定义窗口参数以及处理输入)
++ [glm](https://github.com/g-truc/glm/tree/cc98465e3508535ba8c7f6208df934c156a018dc)(线性代数运算库)
++ [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)(用于读取jpeg/png格式图片)
+
 
 ## 构建方式
 
