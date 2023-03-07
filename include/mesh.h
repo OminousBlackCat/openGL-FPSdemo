@@ -138,15 +138,15 @@ public:
         glBindVertexArray(this->_index_VAO);
         // 启用颜色纹理
         if(this->textureID != -1){
-            glActiveTexture(GL_TEXTURE4);
+            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, this->textureID);
-            glUniform1i(glGetUniformLocation(shader.ID, "material.colorTexture"), 4);
+            glUniform1i(glGetUniformLocation(shader.ID, "material.colorTexture"), 0);
         }
         // 启用纹理1 作为镜面反射纹理
         if(this->specTextureID != -1){
-            glActiveTexture(GL_TEXTURE5);
+            glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, this->specTextureID);
-            glUniform1i(glGetUniformLocation(shader.ID, "material.specTexture"), 5);
+            glUniform1i(glGetUniformLocation(shader.ID, "material.specTexture"), 1);
         }
         glDrawArrays(GL_TRIANGLES, 0, vBuffer.size());
         glBindVertexArray(0);
