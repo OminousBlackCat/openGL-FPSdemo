@@ -20,6 +20,7 @@
 #include"asset.hpp"
 #include"shape.h"
 #include "object.h"
+#include "light.h"
 
 
 // force to use amd graphics card
@@ -147,10 +148,10 @@ int main() {
 
 	// 注册cube
     vector<CubeWithTex> cubeVector;
-    CubeWithTex cube_rice( IMAGE_DIR"/rice.png", IMAGE_DIR"/rice_spec.png");
-    CubeWithTex cube_chen( IMAGE_DIR"/chen.jpg", IMAGE_DIR"/chen_spec.png");
-    CubeWithTex cube_jjz( IMAGE_DIR"/jjz.jpg", IMAGE_DIR"/jjz_spec.jpg");
-    CubeWithTex cube_hutao(IMAGE_DIR"/hutao.png", IMAGE_DIR"/hutao_spec.png");
+    CubeWithTex cube_rice( IMAGE_DIR"/rice.png", IMAGE_DIR"/rice_spec.png", 32.f);
+    CubeWithTex cube_chen( IMAGE_DIR"/chen.jpg", IMAGE_DIR"/chen_spec.png", 16.f);
+    CubeWithTex cube_jjz( IMAGE_DIR"/jjz.jpg", IMAGE_DIR"/jjz_spec.jpg", 128.f);
+    CubeWithTex cube_hutao(IMAGE_DIR"/hutao.png", IMAGE_DIR"/hutao_spec.png", 4.f);
     cubeVector.push_back(cube_rice);
     cubeVector.push_back(cube_chen);
     cubeVector.push_back(cube_jjz);
@@ -159,19 +160,23 @@ int main() {
         cubeVector[i].translation(glm::vec3(0.0f, 0.5f, (float)i * 2 + 0.0f));
     }
 
-	glm::vec3 light_postion(2.0f, 2.0f, 0.0f);
+    // 注册灯光
+    PointLight pointLight(glm::vec3(.0f, 1.f, .0f), glm::vec3(.1f),
+                          glm::vec3(.8f), glm::vec3(1.f),
+                          1.0f, 0.14f, 0.07f);
+    FlashLight flashLight( glm::vec3(0.f),glm::vec3(.7f), glm::vec3(1.f),
+                          0.98f, 0.94f, 1.0f, 0.14f, 0.07f);
+
     glm::vec3 origin_position(0.0f, 0.5f, 0.0f);
 
 
-
-	Shader shader1(SHADER_DIR"/vertexShader.vs", SHADER_DIR"/fragmentShader.fs");
+    Shader objShader(SHADER_DIR"/vertexShader.vs", SHADER_DIR"/frgshader.fs");
     Shader shader_skyBox(SHADER_DIR"/skyVertexShader.vs", SHADER_DIR"/skyFragShader.fs");
-    Shader test_shader(SHADER_DIR"/vertexShader.vs", SHADER_DIR"/blackFragShader.fs");
 
 
 	float gree_axis_value = 1.0f;
 
-    int coldDown = 500;
+    int coldDown = 100;
 
 	while (!glfwWindowShouldClose(mainWindow)) {
         // --------------------重构游戏循环(渲染循环)-------------------------
@@ -209,23 +214,29 @@ int main() {
 			myCamera.movement(Camera::CAMERA_RIGHT, deltaTime);
 		}
 		if (keys[GLFW_KEY_UP]) {
-			light_postion.y += 1.0f * deltaTime;
+			pointLight.position.y += 1.0f * deltaTime;
 		}
 		if (keys[GLFW_KEY_DOWN]) {
-			light_postion.y -= 1.0f * deltaTime;
+            pointLight.position.y -= 1.0f * deltaTime;
 		}
 		if (keys[GLFW_KEY_LEFT]) {
-			light_postion.x -= 1.0f * deltaTime;
+            pointLight.position.x -= 1.0f * deltaTime;
 		}
 		if (keys[GLFW_KEY_RIGHT]) {
-			light_postion.x += 1.0f * deltaTime;
+            pointLight.position.x += 1.0f * deltaTime;
 		}
-		if (keys[GLFW_KEY_F]){
+		if (keys[GLFW_KEY_G]){
             if(coldDown == 0){
                 myCamera.ifFpsMode = !myCamera.ifFpsMode;
-                coldDown = int(0.5 / deltaTime);
+                coldDown = int(0.3 / deltaTime);
             }
 		}
+        if(keys[GLFW_KEY_F]){
+            if(coldDown == 0) {
+                flashLight.flashSwitch = !flashLight.flashSwitch;
+                coldDown = int(0.3 / deltaTime);
+            }
+        }
 		if (keys[GLFW_KEY_SPACE]){
             myCamera.jumpVelocity = 5.0f;
 			myCamera.isJumping = true;
@@ -260,9 +271,9 @@ int main() {
 
         // 4. 对camera进行操作(包括camera物理实体的运动计算以及view矩阵和perspective矩阵的计算)
 
-
-
-		
+        // 将聚光的位置和朝向更新
+        flashLight.position = myCamera.position;
+        flashLight.direction = myCamera.frontVec;
 
 		// define matrix
 		glm::mat4 view = glm::mat4(1.0f);
@@ -276,33 +287,23 @@ int main() {
         glm::mat4 skyView = glm::mat4(glm::mat3(view));
         mySkyBox.draw(shader_skyBox, projection, skyView);
 
-		// 使用shader1(带光照的 物体所使用的着色器)
-		shader1.use();
+		// 使用objShader(带光照的 物体所使用的着色器)
+		objShader.use();
 
-        // 注册cube的反射锐利程度
-        shader1.uniform_float(32.0f, "material.shininess");
+        // 注册摄像机朝向, 环境光, 漫反射光与镜面反射光的属性
+        objShader.uniform_vec3(myCamera.position, "viewPos");
+        objShader.uniform_flashLight(flashLight, "flashLight");
+        objShader.uniform_pointLight(pointLight, "pointLight");
 
-        // 注册环境光 漫反射光与镜面反射光的属性
-        shader1.uniform_vec3(0.15f, 0.15f, 0.15f, "flashLight.ambient");
-        shader1.uniform_vec3(0.7f, 0.7f, 0.7f, "flashLight.diffuse");
-        shader1.uniform_vec3(1.0f, 1.0f, 1.0f, "flashLight.specular");
-        shader1.uniform_vec3(myCamera.position, "flashLight.position");
-        shader1.uniform_vec3(myCamera.frontVec, "flashLight.direction");
-        shader1.uniform_float(0.98f, "flashLight.cutOff");
-        shader1.uniform_float(0.94f, "flashLight.outerCutOff");
-        shader1.uniform_float(1.0f, "flashLight.attenuation_constant");
-        shader1.uniform_float(0.14f, "flashLight.attenuation_linear");
-        shader1.uniform_float(0.07f, "flashLight.attenuation_quadratic");
+        test_spider.draw(objShader, projection, view);
 
-        myFloor.draw(shader1, projection, view);
+        myFloor.draw(objShader, projection, view);
 
-        shader1.uniform_vec3(myCamera.position, "viewPos");
 
-        test_spider.draw(test_shader, projection, view);
 
         glm::vec3 current_position(origin_position.x, origin_position.y, origin_position.z);
         for (auto & i : cubeVector) {
-            i.draw(shader1, projection, view);
+            i.draw(objShader, projection, view);
         }
 
 		glBindVertexArray(0);

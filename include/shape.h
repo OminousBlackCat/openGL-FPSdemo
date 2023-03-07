@@ -17,9 +17,9 @@
 
 class Shape{
 public:
-    Shape(const std::string& textureURL, const std::string& specTextureURL){
+    Shape(const std::string& textureURL, const std::string& specTextureURL, float shininess){
         // 在构造函数里初始化贴图与模型矩阵, 以及物体的初始位置
-        this->bufferTexture(textureURL, specTextureURL);
+        this->bufferTexture(textureURL, specTextureURL, shininess);
         this->modelMat = glm::mat4(1.0f);
         this->position = glm::vec3(0.0f);
     }
@@ -28,7 +28,7 @@ public:
 
     virtual void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat) = 0;
 
-    void bufferTexture(const std::string& textureURL, const std::string& specTextureURL){
+    void bufferTexture(const std::string& textureURL, const std::string& specTextureURL, float shin){
         // bind texture
         int width, height, channelCount;
         unsigned char* textureContent = stbi_load(textureURL.c_str(), &width, &height, &channelCount, 0);
@@ -64,6 +64,7 @@ public:
         glGenerateMipmap(GL_TEXTURE_2D);
         stbi_image_free(textureContent);
         glBindTexture(GL_TEXTURE_2D, 0);
+        this->shininess = shin;
     }
 
     void translation(glm::vec3 translation_value){
@@ -74,6 +75,7 @@ public:
     unsigned int VAO;
     unsigned int textureID;
     unsigned int specTextureID;
+    float shininess;
     float boxWidth;
     float boxLength;
     float boxHeight;
@@ -85,7 +87,7 @@ public:
 
 class CubeWithTex final : public Shape{
 public:
-    CubeWithTex(const std::string& textureURL, const std::string& specTextureURL): Shape(textureURL, specTextureURL){
+    CubeWithTex(const std::string& textureURL, const std::string& specTextureURL, float shin): Shape(textureURL, specTextureURL, shin){
         this->bufferVAO();
         this->boxWidth = 1.0f;
         this->boxHeight = 1.0f;
@@ -115,12 +117,16 @@ public:
         shader.uniform_mat4(projectionMat, "projectionMat");
         shader.uniform_mat4(viewMat, "viewMat");
         shader.uniform_mat4(this->modelMat, "modelMat");
+        shader.uniform_float(this->shininess, "material.ns_value");
+        shader.uniform_vec3(glm::vec3(1.f), "material.ka_value");
+        shader.uniform_vec3(glm::vec3(1.f), "material.ks_value");
+        shader.uniform_vec3(glm::vec3(1.f), "material.kd_value");
 
 
         glBindVertexArray(this->VAO);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, this->textureID);
-        glUniform1i(glGetUniformLocation(shader.ID, "material.objectTexture"), 2);
+        glUniform1i(glGetUniformLocation(shader.ID, "material.colorTexture"), 2);
         glActiveTexture(GL_TEXTURE3); // 启用纹理1 作为镜面反射纹理
         glBindTexture(GL_TEXTURE_2D, this->specTextureID);
         glUniform1i(glGetUniformLocation(shader.ID, "material.specTexture"), 3);
@@ -257,15 +263,19 @@ public:
         shader.uniform_mat4(projectionMat, "projectionMat");
         shader.uniform_mat4(viewMat, "viewMat");
         shader.uniform_mat4(this->modelMat, "modelMat");
+        shader.uniform_float(32.f, "material.ns_value");
+        shader.uniform_vec3(glm::vec3(1.f), "material.ka_value");
+        shader.uniform_vec3(glm::vec3(1.f), "material.ks_value");
+        shader.uniform_vec3(glm::vec3(1.f), "material.kd_value");
 
         
         glBindVertexArray(this->floorVAO); 
-        glActiveTexture(GL_TEXTURE2);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, this->textureID);
-        glUniform1i(glGetUniformLocation(shader.ID, "material.objectTexture"), 2);
-        glActiveTexture(GL_TEXTURE3); // 启用纹理1 作为镜面反射纹理
+        glUniform1i(glGetUniformLocation(shader.ID, "material.objectTexture"), 0);
+        glActiveTexture(GL_TEXTURE1); // 启用纹理1 作为镜面反射纹理
         glBindTexture(GL_TEXTURE_2D, this->specTextureID);
-        glUniform1i(glGetUniformLocation(shader.ID, "material.specTexture"), 3);
+        glUniform1i(glGetUniformLocation(shader.ID, "material.specTexture"), 1);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }

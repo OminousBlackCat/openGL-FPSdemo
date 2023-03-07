@@ -73,7 +73,7 @@ private:
                     continue;
                 }
                 // 如果是"v c1 c2 c3"行, 放入vertices
-                if(util::getHeadElement(cur_line) == "v "){
+                if(util::getHeadElement(cur_line) == "v"){
                     std::istringstream stm(cur_line.substr(2));
                     glm::vec3 v;
                     stm >> v.x;
@@ -102,7 +102,7 @@ private:
                     continue;
                 }
                 // 遇到 "f v1/vT1/vN1 v2/vT2/vN2 ..."则可以开始构建Mesh内的数据结构
-                if(util::getHeadElement(cur_line) == "f "){
+                if(util::getHeadElement(cur_line) == "f"){
                     std::stringstream ss(cur_line.substr(2));
                     std::string cur_set;
                     vector<std::string> tmp_strings;
@@ -162,7 +162,6 @@ private:
                 cout << "One of the obj mesh is empty!!! please check obj file format !"<<endl;
                 break;
             }
-            m.processVAO();
         }
     }
 
@@ -269,14 +268,17 @@ private:
 public:
     explicit Object(const std::string& file_url = ""){
         readObjFile(file_url);
-        cout<<this->current_path + this->mtl_file_name<<endl;
         readMtlFile(this->current_path + this->mtl_file_name);
-        cout<<mtl_map.size()<<endl;
+        // 对mesh 成员进行初始化
+        for(auto &m : meshes){
+            cout<<"Processing mesh: ["<<m.mtlName<<"]..."<<endl;
+            m.processVAO(this->mtl_map[m.mtlName]);
+        }
     }
 
     void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
         for(auto &m : this->meshes)
-            m.draw(shader, projectionMat, viewMat);
+            m.draw(shader, projectionMat, viewMat, this->mtl_map[m.mtlName]);
     }
 
     void setPosition(glm::vec3 new_position){
