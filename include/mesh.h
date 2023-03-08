@@ -36,6 +36,8 @@ private:
     glm::mat4 translationMat;
     // 缩放矩阵, 用来获得最后的ModelMat
     glm::mat4 scaleMat;
+    // 旋转矩阵, 用来获得最后的ModelMat
+    glm::mat4 rotateMat;
     // 模型位置, 和object共享位置
     glm::vec3 position;
 
@@ -48,6 +50,7 @@ public:
         this->position = glm::vec3(0.0f);
         this->translationMat = glm::mat4(1.0f);
         this->scaleMat = glm::mat4(1.0f);
+        this->rotateMat = glm::mat4(1.0f);
         this->modelMat = glm::mat4(1.0f);
         this->textureID = -1;
         this->specTextureID = -1;
@@ -82,10 +85,13 @@ public:
             // set texture filtering parameters
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            int RGBMode = GL_RGB;
-            if(material.kdContent.nrChannels == 4)
-                RGBMode = GL_RGBA;
-            glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, material.kdContent.width, material.kdContent.height, 0, RGBMode, GL_UNSIGNED_BYTE, material.kdContent.imageContent);
+            int RGBMode = GL_SRGB;
+            int baseMode = GL_RGB;
+            if(material.kdContent.nrChannels == 4){
+                RGBMode = GL_SRGB_ALPHA;
+                baseMode = GL_RGBA;
+            }
+            glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, material.kdContent.width, material.kdContent.height, 0, baseMode, GL_UNSIGNED_BYTE, material.kdContent.imageContent);
             glGenerateMipmap(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
@@ -155,24 +161,29 @@ public:
     void setPosition(glm::vec3 new_position){
         this->translationMat = glm::translate(translationMat, new_position - this->position);
         this->position = new_position;
-        this->modelMat = this->translationMat * this->scaleMat;
+        this->modelMat = this->translationMat * this->scaleMat * this->rotateMat;
     }
 
     void setPosition(float n_x, float n_y, float n_z){
         this->translationMat = glm::translate(translationMat, glm::vec3(n_x, n_y, n_z) - this->position);
         this->position = glm::vec3(n_x, n_y, n_z);
-        this->modelMat = this->translationMat * this->scaleMat;
+        this->modelMat = this->translationMat * this->scaleMat * this->rotateMat;
     }
 
     void scale(float rate){
         this->scaleMat = glm::scale(scaleMat, glm::vec3(rate, rate ,rate));
-        this->modelMat = this->translationMat * this->scaleMat;
+        this->modelMat = this->translationMat * this->scaleMat * this->rotateMat;
     }
 
     void translation(glm::vec3 translation_value){
         this->translationMat = glm::translate(translationMat, translation_value);
         this->position += translation_value;
-        this->modelMat = this->translationMat * this->scaleMat;
+        this->modelMat = this->translationMat * this->scaleMat * this->rotateMat;
+    }
+
+    void rotate(glm::vec3 axis, float degree){
+        this->rotateMat = glm::rotate(this->rotateMat, glm::radians(degree), axis);
+        this->modelMat = this->modelMat * this->rotateMat;
     }
 
 };

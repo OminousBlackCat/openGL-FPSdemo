@@ -125,12 +125,7 @@ int main() {
 
 	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // 测试OBJ
-    Object test_spider(MODEL_DIR"/spider/Only_Spider_with_Animations_Export.obj");
-    test_spider.scale(0.01f);
-    test_spider.translation(glm::vec3(0.0f, 0.0f, -1.5f));
-
-	// 初始化天空盒所需的纹理图片
+    // 初始化天空盒所需的纹理图片
     // 注册天空盒
     vector<string> tex_urls;
     tex_urls.emplace_back(IMAGE_DIR"/skyBox-night/posx.jpg");
@@ -141,6 +136,26 @@ int main() {
     tex_urls.emplace_back(IMAGE_DIR"/skyBox-night/negz.jpg");
     SkyBox mySkyBox(tex_urls);
 
+
+    stbi_set_flip_vertically_on_load(true);
+
+    // 测试OBJ
+    Object test_spider(MODEL_DIR"/spider/Only_Spider_with_Animations_Export.obj");
+    test_spider.scale(0.01f);
+    test_spider.translation(glm::vec3(0.0f, 0.0f, -1.5f));
+
+    Object test_cat(MODEL_DIR"/cat/12221_Cat_v1_l3.obj");
+    test_cat.scale(0.02f);
+    test_cat.translation(glm::vec3(0.f, 0.0f, -4.0f));
+    test_cat.rotate(glm::vec3(1.0f, 0.0f, 0.0f), 270.f);
+
+    Object test_eyeball(MODEL_DIR"/eye/eyeball.obj");
+    test_eyeball.scale(0.2);
+    test_eyeball.translation(glm::vec3(0.0f, 0.5f, -6.0f));
+
+
+
+
     // 注册地板
     Floor myFloor(TEXTURE_DIR"/floor.jpg", TEXTURE_DIR"/floor_spec.jpg");
 
@@ -149,9 +164,9 @@ int main() {
 	// 注册cube
     vector<CubeWithTex> cubeVector;
     CubeWithTex cube_rice( IMAGE_DIR"/rice.png", IMAGE_DIR"/rice_spec.png", 32.f);
-    CubeWithTex cube_chen( IMAGE_DIR"/chen.jpg", IMAGE_DIR"/chen_spec.png", 16.f);
+    CubeWithTex cube_chen( IMAGE_DIR"/chen.jpg", IMAGE_DIR"/chen_spec.jpg", 16.f);
     CubeWithTex cube_jjz( IMAGE_DIR"/jjz.jpg", IMAGE_DIR"/jjz_spec.jpg", 128.f);
-    CubeWithTex cube_hutao(IMAGE_DIR"/hutao.png", IMAGE_DIR"/hutao_spec.png", 4.f);
+    CubeWithTex cube_hutao(IMAGE_DIR"/hutao.png", IMAGE_DIR"/hutao_spec.png", 64.f);
     cubeVector.push_back(cube_rice);
     cubeVector.push_back(cube_chen);
     cubeVector.push_back(cube_jjz);
@@ -161,10 +176,10 @@ int main() {
     }
 
     // 注册灯光
-    PointLight pointLight(glm::vec3(.0f, 1.f, .0f), glm::vec3(.1f),
-                          glm::vec3(.8f), glm::vec3(1.f),
+    PointLight pointLight(glm::vec3(.0f, 1.f, .0f), glm::vec3(.05f),
+                          glm::vec3(.2f), glm::vec3(1.f),
                           1.0f, 0.14f, 0.07f);
-    FlashLight flashLight( glm::vec3(0.f),glm::vec3(.7f), glm::vec3(1.f),
+    FlashLight flashLight( glm::vec3(0.0f),glm::vec3(.2f), glm::vec3(1.f),
                           0.98f, 0.94f, 1.0f, 0.14f, 0.07f);
 
     glm::vec3 origin_position(0.0f, 0.5f, 0.0f);
@@ -220,10 +235,10 @@ int main() {
             pointLight.position.y -= 1.0f * deltaTime;
 		}
 		if (keys[GLFW_KEY_LEFT]) {
-            pointLight.position.x -= 1.0f * deltaTime;
+            pointLight.position.z -= 1.0f * deltaTime;
 		}
 		if (keys[GLFW_KEY_RIGHT]) {
-            pointLight.position.x += 1.0f * deltaTime;
+            pointLight.position.z += 1.0f * deltaTime;
 		}
 		if (keys[GLFW_KEY_G]){
             if(coldDown == 0){
@@ -296,6 +311,8 @@ int main() {
         objShader.uniform_pointLight(pointLight, "pointLight");
 
         test_spider.draw(objShader, projection, view);
+        test_cat.draw(objShader, projection, view);
+        test_eyeball.draw(objShader, projection, view);
 
         myFloor.draw(objShader, projection, view);
 

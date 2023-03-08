@@ -247,7 +247,7 @@ private:
                     cur_map_kd = util::alterBackslash(util::getTailElement(cur_line));
                     continue;
                 }
-                if(util::getHeadElement(cur_line) == "map_Bump"){
+                if(util::getHeadElement(cur_line) == "map_Bump" || util::getHeadElement(cur_line) == "map_bump"){
                     cur_map_bump = util::alterBackslash(util::getTailElement(cur_line));
                     continue;
                 }
@@ -304,6 +304,11 @@ public:
         for(auto &m: this->meshes){
             m.translation(translation_value);
         }
+    }
+
+    void rotate(glm::vec3 axis, float degree){
+        for(auto &m: this->meshes)
+            m.rotate(axis, degree);
     }
 
 };

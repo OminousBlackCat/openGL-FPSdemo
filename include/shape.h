@@ -41,10 +41,13 @@ public:
         // set texture filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        int RGBMode = GL_RGB;
-        if(channelCount == 4)
-            RGBMode = GL_RGBA;
-        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
+        int RGBMode = GL_SRGB;
+        int baseMode = GL_RGB;
+        if(channelCount == 4){
+            RGBMode = GL_SRGB_ALPHA;
+            baseMode = GL_RGBA;
+        }
+        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, baseMode, GL_UNSIGNED_BYTE, textureContent);
         glGenerateMipmap(GL_TEXTURE_2D);
         stbi_image_free(textureContent);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -58,6 +61,7 @@ public:
         // set texture filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        RGBMode = GL_RGB;
         if(channelCount == 4)
             RGBMode = GL_RGBA;
         glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
@@ -212,10 +216,13 @@ public:
         // set texture filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        int RGBMode = GL_RGB;
-        if(channelCount == 4)
-            RGBMode = GL_RGBA;
-        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
+        int RGBMode = GL_SRGB;
+        int baseMode = GL_RGB;
+        if(channelCount == 4){
+            RGBMode = GL_SRGB_ALPHA;
+            baseMode = GL_RGBA;
+        }
+        glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, baseMode, GL_UNSIGNED_BYTE, textureContent);
         glGenerateMipmap(GL_TEXTURE_2D);
         stbi_image_free(textureContent);  
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -229,6 +236,7 @@ public:
         // set texture filtering parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        RGBMode = GL_RGB;
         if(channelCount == 4)
             RGBMode = GL_RGBA;
         glTexImage2D(GL_TEXTURE_2D, 0, RGBMode, width, height, 0, RGBMode, GL_UNSIGNED_BYTE, textureContent);
@@ -263,7 +271,7 @@ public:
         shader.uniform_mat4(projectionMat, "projectionMat");
         shader.uniform_mat4(viewMat, "viewMat");
         shader.uniform_mat4(this->modelMat, "modelMat");
-        shader.uniform_float(32.f, "material.ns_value");
+        shader.uniform_float(16.f, "material.ns_value");
         shader.uniform_vec3(glm::vec3(1.f), "material.ka_value");
         shader.uniform_vec3(glm::vec3(1.f), "material.ks_value");
         shader.uniform_vec3(glm::vec3(1.f), "material.kd_value");

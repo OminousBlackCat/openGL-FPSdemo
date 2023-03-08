@@ -26,15 +26,13 @@ namespace util
 
     // 获得一串字符的最尾部元素(以空格等作为分隔符)
     inline std::string getTailElement(const std::string& input_str){
-        size_t token_start = input_str.find_first_not_of(" \t");
-        size_t space_start = input_str.find_first_of(" \t", token_start);
-        size_t tail_start = input_str.find_first_not_of(" \t", space_start);
         size_t tail_end = input_str.find_last_not_of(" \t");
+        size_t tail_start = input_str.substr(0, tail_end).find_last_of(" \t");
         if (tail_start != std::string::npos && tail_end != std::string::npos){
-            return input_str.substr(tail_start, tail_end - tail_start + 1);
+            return input_str.substr(tail_start + 1, tail_end - tail_start + 1);
         }
         else if (tail_start != std::string::npos){
-            return input_str.substr(tail_start);
+            return input_str.substr(tail_start + 1);
         }
         return "";
     }

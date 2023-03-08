@@ -66,49 +66,56 @@ in vec3 fragPos;  // 顶点位置
 // 最后的输出
 out vec4 color;
 
-vec3 calFlashLight(FlashLight f_light);
-vec3 calPointLight(PointLight p_light);
+vec4 calFlashLight(FlashLight f_light);
+vec4 calPointLight(PointLight p_light);
 
 void main(){
-    vec3 result = calPointLight(pointLight) + calFlashLight(flashLight);
-    color = vec4(result, 1.0);
+    vec4 result = calPointLight(pointLight) + calFlashLight(flashLight);
+    if(result.a < 0.1)
+        discard;
+    float gamma = 2.2;
+    color = result;
+    color.rgb = pow(color.rgb, vec3(1.0 / gamma));
 }
 
-vec3 calPointLight(PointLight p_light){
+vec4 calPointLight(PointLight p_light){
     vec3 lightDir = normalize(p_light.position - fragPos);
-    float diff = max(dot(normalize(outNormal), lightDir), 0.0);
+    vec3 norm = normalize(outNormal);
+    float diff = max(dot(norm, lightDir), 0.0);
     // 镜面光着色
-    vec3 reflectDir = reflect(-lightDir, normalize(outNormal));
+    vec3 reflectDir = reflect(-lightDir, norm);
     vec3 viewVec = normalize(viewPos - fragPos);
-    float spec = pow(max(dot(reflectDir, viewVec), 0.0), material.ns_value);
+    vec3 halfwayDir = normalize(lightDir + viewVec);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), material.ns_value);
     // 衰减
     float distance    = length(p_light.position - fragPos);
     float attenuation = 1.0 / (p_light.attenuation_constant + p_light.attenuation_linear * distance +
-                 p_light.attenuation_quadratic * (distance * distance));
+                 p_light.attenuation_quadratic * distance);
     // 合并结果
-    vec3 ambient  = p_light.ambient  * material.ka_value * vec3(texture(material.colorTexture, texCoord));
-    vec3 diffuse  = p_light.diffuse  * material.kd_value * diff * vec3(texture(material.colorTexture, texCoord)) ;
-    vec3 specular = p_light.specular * material.ks_value * spec * vec3(texture(material.specTexture, texCoord));
+    vec4 ambient  = vec4(p_light.ambient, 1.0)  * vec4(material.ka_value, 1.0) * texture(material.colorTexture, texCoord);
+    vec4 diffuse  = vec4(p_light.diffuse, 1.0)  * vec4(material.kd_value, 1.0) * diff * texture(material.colorTexture, texCoord);
+    vec4 specular = vec4(p_light.specular, 1.0) * vec4(material.ks_value, 1.0) * spec * texture(material.specTexture, texCoord);
     return (ambient + diffuse + specular) * attenuation;
 }
 
-vec3 calFlashLight(FlashLight f_light){
+vec4 calFlashLight(FlashLight f_light){
     if(f_light.flashSwitch == 0)
-        return vec3(0.0, 0.0, 0.0);
+        return vec4(0.0, 0.0, 0.0, 0.0);
     // ambient
-    vec3 ambient = f_light.ambient * material.ka_value * vec3(texture(material.colorTexture, vec2(texCoord)));
+    vec4 ambient = vec4(f_light.ambient, 1.0) * vec4(material.ka_value, 1.0) * texture(material.colorTexture, vec2(texCoord));
 
     // diffuse
     vec3 norm = normalize(outNormal);
     vec3 lightVec = normalize(f_light.position - fragPos);
     float diffuseCoe = max(dot(norm, lightVec), 0.0);
-    vec3 diff = f_light.diffuse * material.kd_value * (diffuseCoe * vec3(texture(material.colorTexture, texCoord)));
+    vec4 diff = vec4(f_light.diffuse * material.kd_value, 1.0) * (diffuseCoe * texture(material.colorTexture, texCoord));
 
     // spec
     vec3 reflectVec = reflect(-lightVec, norm);
     vec3 viewVec = normalize(viewPos - fragPos);
-    float specularCoe = pow(max(dot(reflectVec, viewVec), 0.0), material.ns_value);
-    vec3 spec = f_light.specular * material.ks_value * (specularCoe * vec3(texture(material.specTexture, texCoord)));
+    vec3 halfwayVec = normalize(lightVec + viewVec);
+    float specularCoe = pow(max(dot(norm, halfwayVec), 0.0), material.ns_value);
+    vec4 spec = vec4(f_light.specular * material.ks_value, 1.0) * (specularCoe * texture(material.specTexture, texCoord));
 
     //cutOff
     float theta = dot(lightVec, normalize(-f_light.direction));
@@ -116,9 +123,9 @@ vec3 calFlashLight(FlashLight f_light){
     float cut = clamp((theta - f_light.outerCutOff) / epsilon, 0.0, 1.0);
 
     float distance = length(f_light.position - fragPos);
-    float attenuation = 1.0f / (f_light.attenuation_constant + f_light.attenuation_linear * distance + f_light.attenuation_quadratic * (distance * distance));
+    float attenuation = 1.0f / (f_light.attenuation_constant + f_light.attenuation_linear * distance + f_light.attenuation_quadratic * distance);
 
-    vec3 result = ambient + diff * cut * attenuation + spec * cut * attenuation;
+    vec4 result = ambient + diff * cut * attenuation + spec * cut * attenuation;
     return result;
 }
 
