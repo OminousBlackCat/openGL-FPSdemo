@@ -312,3 +312,16 @@ public:
     }
 
 };
+
+struct AABBBox{
+    AABBBox(const glm::vec3 &pointLow, const glm::vec3 &pointHigh) : point_low(pointLow), point_high(pointHigh) {}
+
+    glm::vec3 point_low;
+    glm::vec3 point_high;
+
+    bool isCollision(const AABBBox& input_box) const{
+        return ((this->point_high.x <= input_box.point_high.x && this->point_high.x >= input_box.point_low.x) || (this->point_low.x <= input_box.point_high.x && this->point_low.x >= input_box.point_low.x)) &&
+                ((this->point_high.y <= input_box.point_high.y && this->point_high.y >= input_box.point_low.y) || (this->point_low.y <= input_box.point_high.y && this->point_low.y >= input_box.point_low.y)) &&
+                ((this->point_high.z <= input_box.point_high.z && this->point_high.z >= input_box.point_low.z) || (this->point_low.z <= input_box.point_high.z && this->point_low.z >= input_box.point_low.z));
+    }
+};
