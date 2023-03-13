@@ -32,6 +32,12 @@ private:
     unsigned int specTextureID;
     // model matrix
     glm::mat4 modelMat;
+public:
+    const glm::mat4 &getModelMat() const {
+        return modelMat;
+    }
+
+private:
     // 平移矩阵, 用来获得最后的modelMat
     glm::mat4 translationMat;
     // 缩放矩阵, 用来获得最后的ModelMat

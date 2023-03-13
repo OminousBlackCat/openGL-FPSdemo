@@ -12,7 +12,8 @@
 #include<glm/glm.hpp>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
-#include"shader.h"
+#include "shader.h"
+#include "object.h"
 
 
 class Shape{
@@ -74,6 +75,12 @@ public:
     void translation(glm::vec3 translation_value){
         modelMat = glm::translate(modelMat, translation_value);
         this->position += translation_value;
+        updateAABBBox();
+    }
+
+    void updateAABBBox(){
+        this->aabbBox.point_low = glm::vec3(position.x - boxWidth / 2, position.y, position.z - boxLength / 2);
+        this->aabbBox.point_high = glm::vec3(position.x + boxWidth / 2,position.y + boxHeight, position.z + boxLength / 2);
     }
 
     unsigned int VAO;
@@ -86,6 +93,7 @@ public:
     glm::vec3 position;
     glm::mat4 modelMat;
     float vertex_array;
+    AABBBox aabbBox = AABBBox(glm::vec3(0.f),glm::vec3(0.f));
 };
 
 
@@ -96,6 +104,7 @@ public:
         this->boxWidth = 1.0f;
         this->boxHeight = 1.0f;
         this->boxLength = 1.0f;
+        this->updateAABBBox();
     }
     void bufferVAO() final{
         // bind VAO
@@ -184,6 +193,8 @@ private:
             -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,	 0.0f,  1.0f,  0.0f
     };
+
+
 };
 
 

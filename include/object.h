@@ -2,11 +2,8 @@
 // Created by seu-wxy on 2023/2/28.
 //
 
-#ifndef OPENGL_FPSDEMO_OBJECT_H
-#define OPENGL_FPSDEMO_OBJECT_H
 
-#endif //OPENGL_FPSDEMO_OBJECT_H
-
+#pragma once
 #include<vector>
 #include<string>
 #include<iostream>
@@ -20,14 +17,36 @@
 #include "material.h"
 
 
+struct AABBBox{
+    AABBBox(const glm::vec3 &pointLow, const glm::vec3 &pointHigh) : point_low(pointLow), point_high(pointHigh) {}
+
+    glm::vec3 point_low;
+    glm::vec3 point_high;
+
+    bool isCollision(const AABBBox& input_box) const{
+        if(this->point_low.y <= 0)
+            return true;
+        bool collision_xz = false;
+        collision_xz = ((this->point_low.x <= input_box.point_high.x && this->point_low.x >= input_box.point_low.x) | (this->point_high.x <= input_box.point_high.x && this->point_high.x >= input_box.point_low.x)) &
+                ((this->point_low.z <= input_box.point_high.z && this->point_low.z >= input_box.point_low.z) | (this->point_high.z <= input_box.point_high.z && this->point_high.z >= input_box.point_low.z));
+        collision_xz = collision_xz | (((input_box.point_low.x <= this->point_high.x && input_box.point_low.x >= this->point_low.x) | (input_box.point_high.x <= this->point_high.x && input_box.point_high.x >= this->point_low.x)) &
+                ((input_box.point_low.z <= this->point_high.z && input_box.point_low.z >= this->point_low.z) | (input_box.point_high.z <= this->point_high.z && input_box.point_high.z >= this->point_low.z)));
+        if(collision_xz){
+            if(((point_low.y <= input_box.point_high.y && point_low.y >= input_box.point_low.y) | (point_high.y <= input_box.point_high.y && point_high.y >= input_box.point_low.y)) |
+                    ((input_box.point_low.y <= point_high.y && input_box.point_low.y >= point_low.y) |(input_box.point_high.y <= point_high.y && input_box.point_high.y >= point_low.y)))
+                return true;
+        }
+        return false;
+    }
+};
+
+
 class Object{
 private:
     vector<Mesh> meshes;
-    std::string current_path;
-    std::string mtl_file_name;
-    // 模型在世界坐标系中的位置
     glm::vec3 position;
     std::unordered_map<std::string, Material> mtl_map;
+
 
     void readObjFile(const std::string& obj_file_url = ""){
         if(obj_file_url.empty())
@@ -37,6 +56,10 @@ private:
         std::cout<<"Obj file: ["<<obj_file_url<<"] is loading..."<<endl;
         // 获得当前模型文件的路径 方便后续mtl文件和image文件的加载
         this->current_path = obj_file_url.substr(0, obj_file_url.find_last_of("/\\") + 1);
+
+        // 获得顶点坐标的小值与最大值 用来初始化AABB盒
+        glm::vec3 min_point = glm::vec3(1e7f);
+        glm::vec3 max_point = glm::vec3(-1e7f);
         if(cur_obj_file.is_open()){
             std::string cur_line;
             // 一行一行开始读
@@ -79,6 +102,18 @@ private:
                     stm >> v.x;
                     stm >> v.y;
                     stm >> v.z;
+                    if(v.x < min_point.x)
+                        min_point.x = v.x;
+                    if(v.y < min_point.y)
+                        min_point.y = v.y;
+                    if(v.z < min_point.z)
+                        min_point.z = v.z;
+                    if(v.x > max_point.x)
+                        max_point.x = v.x;
+                    if(v.y > max_point.y)
+                        max_point.y = v.y;
+                    if(v.z > max_point.z)
+                        max_point.z = v.z;
                     cur_vertices.push_back(v);
                     continue;
                 }
@@ -153,9 +188,10 @@ private:
             // 别忘了读完把最后的mesh也存进去
             this->meshes.push_back(cur_mesh);
         }else
-            cout << "OBJ file: [" << MODEL_DIR"/" + obj_file_url << "] could not open...";
+            cout << "OBJ file: [" <<  obj_file_url << "] could not open...";
         // 初始化object的成员变量
         this->position = glm::vec3(0.0f);
+        this->originBox = AABBBox(min_point, max_point);
         // 读取成功后 对mesh进行初始化
         for(auto &m : this->meshes){
             if(m.empty()){
@@ -266,6 +302,12 @@ private:
     }
 
 public:
+    std::string current_path;
+    std::string mtl_file_name;
+    // 模型在世界坐标系中的位置
+    AABBBox originBox = AABBBox(glm::vec3(.0f), glm::vec3(.0f));
+    AABBBox aabbBox = AABBBox(glm::vec3(.0f), glm::vec3(.0f));
+
     explicit Object(const std::string& file_url = ""){
         readObjFile(file_url);
         readMtlFile(this->current_path + this->mtl_file_name);
@@ -274,6 +316,7 @@ public:
             cout<<"Processing mesh: ["<<m.mtlName<<"]..."<<endl;
             m.processVAO(this->mtl_map[m.mtlName]);
         }
+        updateAABBbox();
     }
 
     void draw(Shader shader, glm::mat4 projectionMat, glm::mat4 viewMat){
@@ -286,6 +329,7 @@ public:
         for(auto &m: this->meshes){
             m.setPosition(new_position);
         }
+        updateAABBbox();
     }
 
     void setPosition(float n_x, float n_y, float n_z){
@@ -293,35 +337,32 @@ public:
         for(auto &m: this->meshes){
             m.setPosition(n_x, n_y, n_z);
         }
+        updateAABBbox();
     }
 
     void scale(float rate){
         for(auto &m: this->meshes)
             m.scale(rate);
+        updateAABBbox();
     }
 
     void translation(glm::vec3 translation_value){
         for(auto &m: this->meshes){
             m.translation(translation_value);
         }
+        updateAABBbox();
     }
 
     void rotate(glm::vec3 axis, float degree){
         for(auto &m: this->meshes)
             m.rotate(axis, degree);
+        updateAABBbox();
+    }
+
+    void updateAABBbox(){
+        this->aabbBox.point_low = glm::vec3(meshes[0].getModelMat() * glm::vec4(this->originBox.point_low, 1.0f));
+        this->aabbBox.point_high = glm::vec3(meshes[0].getModelMat() * glm::vec4(this->originBox.point_high, 1.0f));
     }
 
 };
 
-struct AABBBox{
-    AABBBox(const glm::vec3 &pointLow, const glm::vec3 &pointHigh) : point_low(pointLow), point_high(pointHigh) {}
-
-    glm::vec3 point_low;
-    glm::vec3 point_high;
-
-    bool isCollision(const AABBBox& input_box) const{
-        return ((this->point_high.x <= input_box.point_high.x && this->point_high.x >= input_box.point_low.x) || (this->point_low.x <= input_box.point_high.x && this->point_low.x >= input_box.point_low.x)) &&
-                ((this->point_high.y <= input_box.point_high.y && this->point_high.y >= input_box.point_low.y) || (this->point_low.y <= input_box.point_high.y && this->point_low.y >= input_box.point_low.y)) &&
-                ((this->point_high.z <= input_box.point_high.z && this->point_high.z >= input_box.point_low.z) || (this->point_low.z <= input_box.point_high.z && this->point_low.z >= input_box.point_low.z));
-    }
-};

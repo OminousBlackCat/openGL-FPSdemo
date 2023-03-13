@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include "shape.h"
+#include "object.h"
 
 // const camera initialize value
 const float YAW = -90.0f;
@@ -52,6 +53,9 @@ public:
 
     // 碰撞盒的宽度与高度
     // 注意: 摄像机所在位置处于碰撞盒顶层面的中心
+    // 因此盒子的极小点为 (position.x - boxWidth / 2, position.z - boxLength / 2, position.y - boxHeight)
+    //         极大点为 (position.x + boxWidth / 2, position.z + boxLength / 2, position.y)
+    AABBBox cameraBox = AABBBox(glm::vec3(.0f), glm::vec3(.0f));
     float boxWidth = 0.5f;
     float boxHeight = 1.0f;
     float boxLength = 0.5f;
@@ -68,6 +72,7 @@ public:
 		this->scrollSensitivity = SCROOL_SEN;
 		this->zoomAngle = ZOOM_INIT;
 		this->jumpVelocity = this->jumpInitVelocity;
+        updateAABBBox();
 	}
 
 	glm::mat4 getLookAtMat() const {
@@ -119,6 +124,7 @@ public:
 				}
 			}		
 			updateCameraVector();
+            updateAABBBox();
 		}
 	}
 
@@ -127,6 +133,7 @@ public:
 			return;
         position.y += jumpVelocity * deltaTime;
         jumpVelocity -= this->jumpAcceleration * deltaTime;
+        updateAABBBox();
 	}
 
 
@@ -152,34 +159,6 @@ public:
 			this->zoomAngle = 45.0f;
 	}
 
-    bool ifCollision(const Shape& currentObject) const{
-        // 判断照相机的box是否和输入的object(碰撞盒也是个长方体)
-        // 首先在xz平面使用2d-aabb算法判断是否有相交
-        // 计算照相机碰撞盒的x边缘是否在object的两个x边之内
-        bool XZ_collision = false;
-        bool collisionX_one =   this->position.x + this->boxLength / 2 <= currentObject.position.x + currentObject.boxLength / 2 &
-                                this->position.x + this->boxLength / 2 >= currentObject.position.x - currentObject.boxLength / 2;
-        bool collisionX_two =   this->position.x - this->boxLength / 2 <= currentObject.position.x + currentObject.boxLength / 2 &
-                                this->position.x + this->boxLength / 2 >= currentObject.position.x - currentObject.boxLength / 2;
-        if(collisionX_one | collisionX_two){
-            bool collisionZ_one =   this->position.z + this->boxWidth / 2 <= currentObject.position.z + currentObject.boxWidth / 2 &
-                                    this->position.z + this->boxWidth / 2 >= currentObject.position.z - currentObject.boxWidth / 2;
-            bool collisionZ_two =    this->position.z - this->boxWidth / 2 <= currentObject.position.z + currentObject.boxWidth / 2 &
-                                     this->position.z + this->boxWidth / 2 >= currentObject.position.z - currentObject.boxWidth / 2;
-            XZ_collision = collisionZ_two | collisionZ_one;
-        }
-
-        // 判断Y平面是否发生碰撞
-        if(XZ_collision){
-            bool collisionY_one =   this->position.y <= currentObject.position.y + currentObject.boxHeight / 2 &&
-                                    this->position.y > currentObject.position.y - currentObject.boxHeight / 2;
-            bool collisionY_two =   this->position.y - this->boxHeight <= currentObject.position.y + currentObject.boxHeight / 2 &&
-                                    this->position.y - this->boxHeight > currentObject.position.y - currentObject.boxHeight / 2;
-            return (collisionY_one | collisionY_two);
-        } else{
-            return (false | (this->position.y < 1.0f));
-        }
-    }
 
 private:
 	void updateCameraVector() {
@@ -192,4 +171,9 @@ private:
 		this->right = glm::normalize(glm::cross(frontVec, WORLD_UP));
 		this->up = glm::normalize(glm::cross(right, frontVec));
 	}
+
+    void updateAABBBox(){
+        this->cameraBox.point_low = glm::vec3(position.x - boxWidth / 2,position.y - boxHeight, position.z - boxLength / 2 );
+        this->cameraBox.point_high = glm::vec3(position.x + boxWidth / 2,position.y,  position.z + boxLength / 2);
+    }
 };

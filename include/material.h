@@ -108,7 +108,7 @@ public:
             if(ksContent.imageContent != nullptr)
                 ksContent.validate = true;
         }
-        // 加载凹凸贴图
+        // 加载法线贴图
         if(!map_bump_fname.empty()){
             bumpContent.imageContent = stbi_load((this->root_path + this->map_kd_fname).c_str(), &bumpContent.width, &bumpContent.height, &bumpContent.nrChannels, 0);
             if(bumpContent.imageContent != nullptr)

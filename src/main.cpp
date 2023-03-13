@@ -49,7 +49,7 @@ float pitch = 0.0f;
 
 float viewFov = 45.0f;
 
-Camera myCamera = Camera(glm::vec3(0.0f, 1.0f, 5.0f));
+Camera myCamera = Camera(glm::vec3(0.0f, 10.0f, 10.0f));
 
 void resize_window(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -140,18 +140,22 @@ int main() {
     stbi_set_flip_vertically_on_load(true);
 
     // 测试OBJ
+    vector<Object*> objVec;
     Object test_spider(MODEL_DIR"/spider/Only_Spider_with_Animations_Export.obj");
     test_spider.scale(0.01f);
     test_spider.translation(glm::vec3(0.0f, 0.0f, -1.5f));
+    objVec.push_back(&test_spider);
 
     Object test_cat(MODEL_DIR"/cat/12221_Cat_v1_l3.obj");
     test_cat.scale(0.02f);
     test_cat.translation(glm::vec3(0.f, 0.0f, -4.0f));
     test_cat.rotate(glm::vec3(1.0f, 0.0f, 0.0f), 270.f);
+    objVec.push_back(&test_cat);
 
     Object test_eyeball(MODEL_DIR"/eye/eyeball.obj");
     test_eyeball.scale(0.2);
     test_eyeball.translation(glm::vec3(0.0f, 0.5f, -6.0f));
+    objVec.push_back(&test_eyeball);
 
 
 
@@ -261,8 +265,12 @@ int main() {
 
         // 3. 对物体的位置信息进行更新, 判断是否有相交, 判断是否碰撞
         bool ifCollision = false;
-        for(auto object: cubeVector){
-            ifCollision = ifCollision || myCamera.ifCollision(object);
+        for(auto& cube: cubeVector){
+            ifCollision = ifCollision || myCamera.cameraBox.isCollision(cube.aabbBox);
+        }
+        cout<<endl;
+        for(auto& op: objVec){
+            ifCollision = ifCollision || myCamera.cameraBox.isCollision(op->aabbBox);
         }
         if(ifCollision){
             myCamera.position.x = currentCameraPosition.x;
@@ -274,8 +282,11 @@ int main() {
         // 应用重力加速度
         ifCollision = false;
         myCamera.down(deltaTime);
-        for(auto object: cubeVector){
-            ifCollision = ifCollision || myCamera.ifCollision(object);
+        for(auto& cube: cubeVector){
+            ifCollision = ifCollision || myCamera.cameraBox.isCollision(cube.aabbBox);
+        }
+        for(auto& op: objVec){
+            ifCollision = ifCollision || myCamera.cameraBox.isCollision(op->aabbBox);
         }
         if(ifCollision){
             myCamera.position = currentCameraPosition;

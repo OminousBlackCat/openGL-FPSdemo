@@ -69,4 +69,8 @@ namespace util
         return tmp;
     }
 
+    inline void coutVec3(const glm::vec3 v3){
+        cout<<"glm::vec3("<<v3.x<<", "<<v3.y<<", "<<v3.z<<")";
+    }
+
 }
