@@ -15,8 +15,9 @@
 
 
 ## 构建方式
+需递归拉取lib\下的[glfw](https://github.com/glfw/glfw/tree/dd8a678a66f1967372e5a5e3deac41ebf65ee127)与[glm](https://github.com/g-truc/glm/tree/cc98465e3508535ba8c7f6208df934c156a018dc)库，使用` git submodule update `拉取所有子模块；
 
-需递归拉取lib\下的[glfw](https://github.com/glfw/glfw/tree/dd8a678a66f1967372e5a5e3deac41ebf65ee127)与[glm](https://github.com/g-truc/glm/tree/cc98465e3508535ba8c7f6208df934c156a018dc)库，CMake将递归构建并链接到项目内
+随后CMake将递归构建并链接到项目内。
 
 glad已经包含在文件夹内，若不能正常运行请到[glad下载界面](https://glad.dav1d.de/)按照对应版本下载
 
@@ -35,9 +36,14 @@ glad已经包含在文件夹内，若不能正常运行请到[glad下载界面](
 ## 考虑加入的内容
 
 + 使用深度缓冲与帧缓冲并基于深度映射与阴影映射完成阴影
+
 + 复杂物体的碰撞盒与复杂地面
+
 + 鼠标点击事件
+
 + 完善交互，可以自由导入模型与更改模型属性、光照属性
+
 + 改为PBR
+
 + 改为ray tracing
 
